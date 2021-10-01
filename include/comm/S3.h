@@ -9,6 +9,7 @@
 #include <boost/interprocess/streams/bufferstream.hpp>
 #include <aws/s3/model/PutObjectRequest.h>
 #include <aws/s3/model/GetObjectRequest.h>
+#include <boost/log/trivial.hpp>
 
 namespace SMI::Comm {
     class S3 : public CentralChannel {
@@ -28,8 +29,7 @@ namespace SMI::Comm {
             request.SetBody(data);
             Aws::S3::Model::PutObjectOutcome outcome = client->PutObject(request);
             if (!outcome.IsSuccess()) {
-                std::cout << "Error: PutObject: " <<
-                outcome.GetError() << std::endl;
+                BOOST_LOG_TRIVIAL(error) << outcome.GetError();
             }
         }
 

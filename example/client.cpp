@@ -23,9 +23,9 @@ int main() {
 
     SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true);
 
-    SMI::Comm::S3 s3({{"bucket_name", std::any(std::string("romanboe-uploadtest"))}, {"s3_region", std::any(std::string("eu-central-1"))}});
-    SMI::Comm::Data<int> ret;
-    s3.download(ret, std::string("test"));
-    std::cout << ret << std::endl;
+    //SMI::Comm::S3 s3({{"bucket_name", std::any(std::string("romanboe-uploadtest"))}, {"s3_region", std::any(std::string("eu-central-1"))}});
+    //SMI::Comm::Data<int> ret;
+    //s3.download(ret, std::string("test"));
+    //std::cout << ret << std::endl;
 
 }
