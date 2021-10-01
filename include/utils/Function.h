@@ -6,6 +6,10 @@ namespace SMI::Utils {
     class Function {
     public:
         Function(std::function<T(T,T)> f, bool commutative) : f(f), commutative(commutative) {}
+
+        T operator()(T a, T b) {
+            return f(a, b);
+        }
     private:
         std::function<T(T,T)> f;
         bool commutative;
