@@ -28,8 +28,7 @@ int main() {
         std::cout << backend_name << '\n';
     }
 
-    SMI::Comm::S3 s3({{"bucket_name", std::any(std::string("romanboe-uploadtest"))}, {"s3_region", std::any(std::string("eu-central-1"))}});
-    comm.register_channel(s3);
+
     comm.send(d, 0);
     //SMI::Comm::Data<int> ret;
     //s3.download(ret, std::string("test"));

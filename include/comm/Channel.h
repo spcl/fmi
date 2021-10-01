@@ -2,6 +2,8 @@
 #define SMI_CHANNEL_H
 
 #include "Data.h"
+#include <string>
+#include <map>
 #include "../utils/Function.h"
 
 using peer_num = unsigned int;
@@ -32,6 +34,8 @@ namespace SMI::Comm {
         virtual void bcast(channel_data buf, peer_num root) = 0;
 
         virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;*/
+
+        static std::shared_ptr<Channel> get_channel(std::string name, std::map<std::string, std::string> params);
 
     };
 

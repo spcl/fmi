@@ -13,7 +13,7 @@
 namespace SMI::Comm {
     class S3 : public CentralChannel {
     public:
-        explicit S3(std::map<std::string, std::any> params);
+        explicit S3(std::map<std::string, std::string> params);
 
         ~S3();
 

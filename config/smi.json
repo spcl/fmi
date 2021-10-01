@@ -1,7 +1,9 @@
 {
   "backends": {
     "S3": {
-      "test": 5
+      "enabled": true,
+      "bucket_name": "romanboe-uploadtest",
+      "s3_region": "eu-central-1"
     }
   }
 }

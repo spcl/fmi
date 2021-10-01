@@ -3,11 +3,11 @@
 #include <boost/log/trivial.hpp>
 
 
-SMI::Comm::S3::S3(std::map<std::string, std::any> params) {
+SMI::Comm::S3::S3(std::map<std::string, std::string> params) {
     Aws::InitAPI(options);
-    bucket_name = std::any_cast<std::string>(params["bucket_name"]);
+    bucket_name = params["bucket_name"];
     Aws::Client::ClientConfiguration config;
-    config.region = std::any_cast<std::string>(params["s3_region"]);
+    config.region = params["s3_region"];
 
     auto credentialsProvider = Aws::MakeShared<Aws::Auth::EnvironmentAWSCredentialsProvider>("CredProvider");
     client = std::make_unique<Aws::S3::S3Client>(credentialsProvider, config);

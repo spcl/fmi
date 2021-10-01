@@ -12,7 +12,7 @@ namespace SMI {
         template<typename T>
         void send(Comm::Data<T> buf, peer_num dest) {
             channel_data data {buf.data(), buf.size_in_bytes()};
-            channels[0]->send(data, 0);
+            channels["S3"]->send(data, 0);
         }
 
         template<typename T>
@@ -36,10 +36,10 @@ namespace SMI {
         template<typename T>
         void scan(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);
 
-        void register_channel(SMI::Comm::Channel &c);
+        void register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel>);
 
     private:
-        std::vector<SMI::Comm::Channel*> channels;
+        std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> channels;
     };
 }
 
