@@ -2,5 +2,5 @@
 #include "../include/Communicator.h"
 
 int main() {
-    Communicator comm(0, 1, "../config/smi.json");
+    SMI::Communicator comm(0, 1, "../config/SMI.json");
 }
