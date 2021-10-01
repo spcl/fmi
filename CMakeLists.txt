@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Boost COMPONENTS json REQUIRED)
 
-add_library(SMI SHARED src/Communicator.cpp src/utils/Configuration.cpp)
+add_library(SMI SHARED src/Communicator.cpp src/utils/Configuration.cpp src/comm/Channel.cpp)
 
 target_include_directories(SMI PRIVATE ${Boost_INCLUDE_DIRS})
 

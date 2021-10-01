@@ -3,7 +3,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <iostream>
 
-namespace SMI::utils {
+namespace SMI::Utils {
     namespace pt = boost::property_tree;
 
     Configuration::Configuration(const std::string& config_path) {

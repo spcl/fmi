@@ -3,7 +3,7 @@
 
 
 #include <string>
-namespace SMI::utils {
+namespace SMI::Utils {
     class Configuration {
     public:
         explicit Configuration(const std::string& config_path);

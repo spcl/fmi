@@ -4,7 +4,7 @@
 #include <any>
 #include <vector>
 
-namespace SMI::comm {
+namespace SMI::Comm {
     template<typename T>
     class Data {
     public:
