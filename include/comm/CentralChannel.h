@@ -6,17 +6,13 @@
 namespace SMI::Comm {
     class CentralChannel : public Channel {
     public:
-        template<typename T>
-        void send(Data<T> buf, peer_num dest, int tag);
+        void send(channel_data buf, peer_num dest) override;
 
-        template<typename T>
-        void recv(Data<T> buf, peer_num dest, int tag);
+        void recv(channel_data buf, peer_num dest) override;
 
-        template<typename T>
-        void upload(Data<T> buf, std::string name);
+        virtual void upload(channel_data buf, std::string name) = 0;
 
-        template<typename T>
-        Data<T> download(std::string name);
+        virtual void download(channel_data buf, std::string name) = 0;
     };
 }
 

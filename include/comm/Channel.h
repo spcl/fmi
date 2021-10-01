@@ -5,34 +5,36 @@
 #include "../utils/Function.h"
 
 using peer_num = unsigned int;
+using raw_function = std::function<char*(char*, char*)>;
+
+struct channel_data {
+    char* buf;
+    std::size_t len;
+};
+
+
 
 namespace SMI::Comm {
     class Channel {
     public:
-        template<typename T>
-        void send(Data<T> buf, peer_num dest, int tag);
+        virtual void send(channel_data buf, peer_num dest) = 0;
 
-        template<typename T>
-        void recv(Data<T> buf, peer_num dest, int tag);
+        virtual void recv(channel_data buf, peer_num dest) = 0;
 
-        template <typename T>
-        void reduce(Data<T> sendbuf, Data<T> recvbuf, peer_num root, SMI::Utils::Function<T> f);
+        /*virtual void reduce(channel_data sendbuf, channel_data recvbuf, peer_num root, raw_function f) = 0;
 
-        template <typename T>
-        void allreduce(Data<T> sendbuf, Data<T> recvbuf, SMI::Utils::Function<T> f);
+        virtual void allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;
 
-        template<typename T>
-        void gather(Data<T> sendbuf, Data<T> recvbuf, peer_num root);
+        virtual void gather(channel_data sendbuf, channel_data recvbuf, peer_num root) = 0;
 
-        template<typename T>
-        void scatter(Data<T> sendbuf, Data<T> recvbuf, peer_num root);
+        virtual void scatter(channel_data sendbuf, channel_data recvbuf, peer_num root) = 0;
 
-        template<typename T>
-        void bcast(Data<T> buf, peer_num root);
+        virtual void bcast(channel_data buf, peer_num root) = 0;
 
-        template<typename T>
-        void scan(Data<T> sendbuf, Data<T> recvbuf, SMI::Utils::Function<T> f);
+        virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;*/
+
     };
+
 }
 
 
