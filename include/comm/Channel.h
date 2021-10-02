@@ -38,9 +38,11 @@ namespace SMI::Comm {
 
         virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;*/
 
-        virtual void set_peer_id(SMI::Utils::peer_num num) { peer_id = num; }
+        void set_peer_id(SMI::Utils::peer_num num) { peer_id = num; }
 
-        virtual void set_num_peers(SMI::Utils::peer_num num) { num_peers = num; }
+        void set_num_peers(SMI::Utils::peer_num num) { num_peers = num; }
+
+        void set_comm_name(std::string communication_name) {comm_name = communication_name; }
 
         virtual void finalize() = 0;
 
@@ -49,6 +51,7 @@ namespace SMI::Comm {
     protected:
         SMI::Utils::peer_num peer_id;
         SMI::Utils::peer_num num_peers;
+        std::string comm_name;
 
     };
 
