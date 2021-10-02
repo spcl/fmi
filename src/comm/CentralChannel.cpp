@@ -3,12 +3,30 @@
 #include <thread>
 
 void SMI::Comm::CentralChannel::send(channel_data buf, SMI::Utils::peer_num dest) {
-    std::string file_name = std::to_string(peer_id) + "_" + std::to_string(dest);
+    auto num_operation_entry = num_operations.find("send" + std::to_string(dest));
+    unsigned int operation_num;
+    if (num_operation_entry == num_operations.end()) {
+        operation_num = 0;
+    } else {
+        operation_num = num_operation_entry->second;
+    }
+    std::string file_name = std::to_string(peer_id) + "_" + std::to_string(dest) + "_" + std::to_string(operation_num);
+    operation_num++;
+    num_operations["send" + std::to_string(dest)] = operation_num;
     upload(buf, file_name);
 }
 
 void SMI::Comm::CentralChannel::recv(channel_data buf, SMI::Utils::peer_num dest) {
-    std::string file_name = std::to_string(dest) + "_" + std::to_string(peer_id);
+    auto num_operation_entry = num_operations.find("recv" + std::to_string(dest));
+    unsigned int operation_num;
+    if (num_operation_entry == num_operations.end()) {
+        operation_num = 0;
+    } else {
+        operation_num = num_operation_entry->second;
+    }
+    std::string file_name = std::to_string(dest) + "_" + std::to_string(peer_id) + "_" + std::to_string(operation_num);
+    operation_num++;
+    num_operations["recv" + std::to_string(dest)] = operation_num;
     download(buf, file_name);
 }
 

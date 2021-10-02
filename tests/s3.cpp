@@ -29,6 +29,27 @@ BOOST_AUTO_TEST_CASE(sending_receiving) {
     BOOST_CHECK_EQUAL(val, recv);
 }
 
+BOOST_AUTO_TEST_CASE(sending_receiving_mult_times) {
+    auto s3_send = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+
+    // Sending
+    int val1 = 42;
+    int val2 = 4242;
+    s3_send->set_peer_id(0);
+    s3_send->send({reinterpret_cast<char*>(&val1), sizeof(val1)}, 1);
+    s3_send->send({reinterpret_cast<char*>(&val2), sizeof(val2)}, 1);
+
+    std::shared_ptr<SMI::Comm::Channel> s3_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+    // Receiving
+    int recv1, recv2;
+    s3_rcv->set_peer_id(1);
+    s3_rcv->recv({reinterpret_cast<char*>(&recv1), sizeof(recv1)}, 0);
+    s3_rcv->recv({reinterpret_cast<char*>(&recv2), sizeof(recv2)}, 0);
+
+    BOOST_CHECK_EQUAL(val1, recv1);
+    BOOST_CHECK_EQUAL(val2, recv2);
+}
+
 BOOST_AUTO_TEST_CASE(bcast) {
     constexpr int num_peers = 4;
     std::vector<int> vals(num_peers);
