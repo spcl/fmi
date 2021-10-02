@@ -29,25 +29,17 @@ SMI::Comm::S3::~S3() {
     }
 }
 
-void SMI::Comm::S3::download(channel_data buf, std::string name, bool cleanup) {
+bool SMI::Comm::S3::download_object(channel_data buf, std::string name) {
     Aws::S3::Model::GetObjectRequest request;
     request.WithBucket(bucket_name).WithKey(name);
-    unsigned int elapsed_time = 0;
-    while (elapsed_time < max_timeout) {
-        auto outcome = client->GetObject(request);
-        if (outcome.IsSuccess()) {
-            auto& s = outcome.GetResult().GetBody();
-            s.read(buf.buf, buf.len);
-            if (cleanup) {
-                delete_object(name);
-            }
-            return;
-        } else {
-            elapsed_time += timeout;
-            std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
-        }
+    auto outcome = client->GetObject(request);
+    if (outcome.IsSuccess()) {
+        auto& s = outcome.GetResult().GetBody();
+        s.read(buf.buf, buf.len);
+        return true;
+    } else {
+        return false;
     }
-
 }
 
 void SMI::Comm::S3::upload(channel_data buf, std::string name) {

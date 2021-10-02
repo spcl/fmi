@@ -9,7 +9,7 @@ void SMI::Comm::CentralChannel::send(channel_data buf, SMI::Utils::peer_num dest
 
 void SMI::Comm::CentralChannel::recv(channel_data buf, SMI::Utils::peer_num dest) {
     std::string file_name = std::to_string(dest) + "_" + std::to_string(peer_id);
-    download(buf, file_name, true);
+    download(buf, file_name);
 }
 
 void SMI::Comm::CentralChannel::bcast(channel_data buf, SMI::Utils::peer_num root) {
@@ -18,7 +18,7 @@ void SMI::Comm::CentralChannel::bcast(channel_data buf, SMI::Utils::peer_num roo
     if (peer_id == root) {
         upload(buf, file_name);
     } else {
-        download(buf, file_name, false);
+        download(buf, file_name);
     }
 }
 
@@ -50,4 +50,17 @@ void SMI::Comm::CentralChannel::barrier() {
 
 void SMI::Comm::CentralChannel::finalize() {
 
+}
+
+void SMI::Comm::CentralChannel::download(channel_data buf, std::string name) {
+    unsigned int elapsed_time = 0;
+    while (elapsed_time < max_timeout) {
+        bool success = download_object(buf, name);
+        if (success) {
+            return;
+        } else {
+            elapsed_time += timeout;
+            std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
+        }
+    }
 }

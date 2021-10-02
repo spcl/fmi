@@ -17,7 +17,7 @@ namespace SMI::Comm {
 
         void upload(channel_data buf, std::string name) override;
 
-        void download(channel_data buf, std::string name, bool cleanup) override;
+        bool download_object(channel_data buf, std::string name) override;
 
         std::vector<std::string> get_object_names() override;
 
