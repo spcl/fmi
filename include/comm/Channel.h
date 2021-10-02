@@ -23,6 +23,10 @@ namespace SMI::Comm {
 
         virtual void recv(channel_data buf, SMI::Utils::peer_num dest) = 0;
 
+        virtual void bcast(channel_data buf, SMI::Utils::peer_num root) = 0;
+
+        virtual void barrier() = 0;
+
         /*virtual void reduce(channel_data sendbuf, channel_data recvbuf, peer_num root, raw_function f) = 0;
 
         virtual void allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;
@@ -31,16 +35,20 @@ namespace SMI::Comm {
 
         virtual void scatter(channel_data sendbuf, channel_data recvbuf, peer_num root) = 0;
 
-        virtual void bcast(channel_data buf, peer_num root) = 0;
 
         virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;*/
 
         virtual void set_peer_id(SMI::Utils::peer_num num) { peer_id = num; }
 
+        virtual void set_num_peers(SMI::Utils::peer_num num) { num_peers = num; }
+
+        virtual void finalize() = 0;
+
         static std::shared_ptr<Channel> get_channel(std::string name, std::map<std::string, std::string> params);
 
     protected:
         SMI::Utils::peer_num peer_id;
+        SMI::Utils::peer_num num_peers;
 
     };
 

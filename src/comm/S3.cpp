@@ -7,8 +7,12 @@
 
 char TAG[] = "S3Client";
 
-SMI::Comm::S3::S3(std::map<std::string, std::string> params) {
-    Aws::InitAPI(options);
+SMI::Comm::S3::S3(std::map<std::string, std::string> params, bool init_api) {
+    if (init_api) {
+        // Only one call allowed (https://github.com/aws/aws-sdk-cpp/issues/456), give possible multiple clients control over initialization
+        Aws::InitAPI(options);
+        has_initialized = true;
+    }
     bucket_name = params["bucket_name"];
     Aws::Client::ClientConfiguration config;
     config.region = params["s3_region"];
@@ -20,7 +24,9 @@ SMI::Comm::S3::S3(std::map<std::string, std::string> params) {
 }
 
 SMI::Comm::S3::~S3() {
-    Aws::ShutdownAPI(options);
+    if (has_initialized) {
+        Aws::ShutdownAPI(options);
+    }
 }
 
 void SMI::Comm::S3::download(channel_data buf, std::string name, bool cleanup) {
@@ -33,7 +39,7 @@ void SMI::Comm::S3::download(channel_data buf, std::string name, bool cleanup) {
             auto& s = outcome.GetResult().GetBody();
             s.read(buf.buf, buf.len);
             if (cleanup) {
-                delete_file(name);
+                delete_object(name);
             }
             return;
         } else {
@@ -58,12 +64,16 @@ void SMI::Comm::S3::upload(channel_data buf, std::string name) {
     }
 }
 
-void SMI::Comm::S3::delete_file(std::string name) {
+void SMI::Comm::S3::delete_object(std::string name) {
     Aws::S3::Model::DeleteObjectRequest request;
     request.WithBucket(bucket_name).WithKey(name);
     auto outcome = client->DeleteObject(request);
     if (!outcome.IsSuccess()) {
         BOOST_LOG_TRIVIAL(error) << "Error when deleting from S3: " << outcome.GetError();
     }
+}
+
+std::vector<std::string> SMI::Comm::S3::get_object_names() {
+    return std::vector<std::string>();
 }
 

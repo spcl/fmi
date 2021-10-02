@@ -11,9 +11,28 @@ namespace SMI::Comm {
 
         void recv(channel_data buf, SMI::Utils::peer_num dest) override;
 
+        void bcast(channel_data buf, SMI::Utils::peer_num root) override;
+
+        void barrier() override;
+
         virtual void upload(channel_data buf, std::string name) = 0;
 
         virtual void download(channel_data buf, std::string name, bool cleanup) = 0;
+
+        virtual std::vector<std::string> get_object_names() = 0;
+
+        virtual void delete_object(std::string name) = 0;
+
+        void finalize() override;
+
+    protected:
+        std::map<std::string, unsigned int> num_operations = {
+                {"bcast", 0},
+                {"barrier", 0}
+        };
+        std::vector<std::string> created_objects;
+        unsigned int timeout;
+        unsigned int max_timeout;
     };
 }
 
