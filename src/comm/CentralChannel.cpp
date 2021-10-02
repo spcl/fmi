@@ -57,7 +57,7 @@ void SMI::Comm::CentralChannel::barrier() {
                 num_arrived++;
             }
         }
-        if (num_arrived == num_peers) {
+        if (num_arrived >= num_peers) {
             return;
         } else {
             elapsed_time += timeout;

@@ -2,6 +2,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include "../include/comm/Channel.h"
 #include "../include/comm/S3.h"
+#include <omp.h>
 
 std::map<std::string, std::string> s3_test_params = {
         {"bucket_name", "romanboe-uploadtest"},
@@ -64,7 +65,7 @@ BOOST_AUTO_TEST_CASE(bcast) {
     s3_sender->bcast({reinterpret_cast<char*>(&vals[0]), sizeof(vals[0])}, 0);
 
     for (int i = 1; i < num_peers; i++) {
-        std::shared_ptr<SMI::Comm::Channel> s3_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+        auto s3_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
         s3_rcv->set_peer_id(i);
         s3_rcv->bcast({reinterpret_cast<char*>(&vals[i]), sizeof(vals[i])}, 0);
     }
@@ -82,4 +83,31 @@ BOOST_AUTO_TEST_CASE(barrier_unsucc) {
     std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(after - bef).count();
     BOOST_TEST(elapsed_ms > std::stoi(s3_test_params["max_timeout"]));
+}
+
+BOOST_AUTO_TEST_CASE(barrier_succ) {
+    auto ch_1 = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    auto ch_2 = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+    ch_1->set_peer_id(0);
+    ch_1->set_num_peers(2);
+    ch_2->set_peer_id(1);
+    ch_2->set_num_peers(2);
+    std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
+    #pragma omp parallel num_threads(2)
+    {
+        int tid = omp_get_thread_num();
+        if (tid == 0) {
+            ch_1->barrier();
+        } else {
+            ch_2->barrier();
+        }
+    }
+
+
+    std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(after - bef).count();
+
+    ch_1->finalize();
+    ch_2->finalize();
+    BOOST_TEST(elapsed_ms < std::stoi(s3_test_params["max_timeout"]));
 }
