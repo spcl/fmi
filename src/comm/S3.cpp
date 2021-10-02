@@ -47,8 +47,7 @@ void SMI::Comm::S3::upload_object(channel_data buf, std::string name) {
     Aws::S3::Model::PutObjectRequest request;
     request.WithBucket(bucket_name).WithKey(name);
 
-    const std::shared_ptr<Aws::IOStream> data = Aws::MakeShared<boost::interprocess::bufferstream>(TAG, buf.buf,
-                                                                                                    buf.len);
+    const std::shared_ptr<Aws::IOStream> data = Aws::MakeShared<boost::interprocess::bufferstream>(TAG, buf.buf, buf.len);
 
     request.SetBody(data);
     auto outcome = client->PutObject(request);

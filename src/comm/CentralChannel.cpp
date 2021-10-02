@@ -49,13 +49,9 @@ void SMI::Comm::CentralChannel::barrier() {
     unsigned int elapsed_time = 0;
     while (elapsed_time < max_timeout) {
         auto objects = get_object_names();
-        int num_arrived = 0;
-        for (const auto& object_name : objects) {
-            if (object_name.size() > barrier_suffix.size() &&
-            object_name.compare(object_name.size() - barrier_suffix.size(), barrier_suffix.size(), barrier_suffix) == 0) {
-                num_arrived++;
-            }
-        }
+        auto has_barrier_suffix = [barrier_suffix] (const std::string& s){return s.size() > barrier_suffix.size() &&
+                                                    s.compare(s.size() - barrier_suffix.size(), barrier_suffix.size(), barrier_suffix) == 0 ;};
+        auto num_arrived = std::count_if(objects.begin(), objects.end(), has_barrier_suffix);
         if (num_arrived >= num_peers) {
             return;
         } else {
@@ -66,9 +62,7 @@ void SMI::Comm::CentralChannel::barrier() {
 }
 
 void SMI::Comm::CentralChannel::finalize() {
-    for (const auto& object_name : created_objects) {
-        delete_object(object_name);
-    }
+    std::for_each(created_objects.begin(), created_objects.end(), [this] (auto &object_name) { delete_object(object_name); });
 }
 
 void SMI::Comm::CentralChannel::download(channel_data buf, std::string name) {
