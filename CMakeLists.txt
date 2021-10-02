@@ -12,6 +12,8 @@ target_include_directories(SMI PRIVATE ${Boost_INCLUDE_DIRS})
 
 target_link_libraries(SMI ${Boost_Libraries} ${AWSSDK_LINK_LIBRARIES} Boost::log)
 
-add_executable(client example/client.cpp)
+add_executable(client tests/client.cpp)
 
 target_link_libraries(client SMI)
+
+add_subdirectory(tests)
