@@ -67,7 +67,9 @@ void SMI::Comm::CentralChannel::barrier() {
 }
 
 void SMI::Comm::CentralChannel::finalize() {
-
+    for (const auto& object_name : created_objects) {
+        delete_object(object_name);
+    }
 }
 
 void SMI::Comm::CentralChannel::download(channel_data buf, std::string name) {
@@ -81,4 +83,9 @@ void SMI::Comm::CentralChannel::download(channel_data buf, std::string name) {
             std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
         }
     }
+}
+
+void SMI::Comm::CentralChannel::upload(channel_data buf, std::string name) {
+    created_objects.push_back(name);
+    upload_object(buf, name);
 }

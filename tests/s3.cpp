@@ -26,6 +26,8 @@ BOOST_AUTO_TEST_CASE(sending_receiving) {
     s3_rcv->set_peer_id(1);
     s3_rcv->recv(recv_buf, 0);
 
+    s3_send->finalize();
+    s3_rcv->finalize();
     BOOST_CHECK_EQUAL(val, recv);
 }
 
@@ -46,6 +48,9 @@ BOOST_AUTO_TEST_CASE(sending_receiving_mult_times) {
     s3_rcv->recv({reinterpret_cast<char*>(&recv1), sizeof(recv1)}, 0);
     s3_rcv->recv({reinterpret_cast<char*>(&recv2), sizeof(recv2)}, 0);
 
+    s3_send->finalize();
+    s3_rcv->finalize();
+
     BOOST_CHECK_EQUAL(val1, recv1);
     BOOST_CHECK_EQUAL(val2, recv2);
 }
@@ -64,6 +69,7 @@ BOOST_AUTO_TEST_CASE(bcast) {
         s3_rcv->bcast({reinterpret_cast<char*>(&vals[i]), sizeof(vals[i])}, 0);
     }
     std::vector<int> expected(num_peers, 42);
+    s3_sender->finalize();
     BOOST_TEST(vals == expected, boost::test_tools::per_element());
 }
 

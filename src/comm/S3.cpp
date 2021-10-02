@@ -42,7 +42,7 @@ bool SMI::Comm::S3::download_object(channel_data buf, std::string name) {
     }
 }
 
-void SMI::Comm::S3::upload(channel_data buf, std::string name) {
+void SMI::Comm::S3::upload_object(channel_data buf, std::string name) {
     Aws::S3::Model::PutObjectRequest request;
     request.WithBucket(bucket_name).WithKey(name);
 

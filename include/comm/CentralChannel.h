@@ -15,11 +15,13 @@ namespace SMI::Comm {
 
         void barrier() override;
 
-        virtual void upload(channel_data buf, std::string name) = 0;
+        virtual void upload_object(channel_data buf, std::string name) = 0;
 
         virtual bool download_object(channel_data buf, std::string name) = 0;
 
         virtual void download(channel_data buf, std::string name);
+
+        virtual void upload(channel_data buf, std::string name);
 
         virtual std::vector<std::string> get_object_names() = 0;
 
