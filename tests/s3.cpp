@@ -73,11 +73,13 @@ BOOST_AUTO_TEST_CASE(bcast) {
     BOOST_TEST(vals == expected, boost::test_tools::per_element());
 }
 
-BOOST_AUTO_TEST_CASE(barrier) {
-    //TODO
-    auto s3_1 = SMI::Comm::Channel::get_channel("S3", s3_test_params);
-    s3_1->set_peer_id(0);
-    s3_1->set_num_peers(2);
-
-    s3_1->barrier();
+BOOST_AUTO_TEST_CASE(barrier_unsucc) {
+    auto ch_1 = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    ch_1->set_peer_id(0);
+    ch_1->set_num_peers(2);
+    std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
+    ch_1->barrier();
+    std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
+    auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(after - bef).count();
+    BOOST_TEST(elapsed_ms > std::stoi(s3_test_params["max_timeout"]));
 }
