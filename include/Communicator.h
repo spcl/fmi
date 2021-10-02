@@ -10,31 +10,31 @@ namespace SMI {
         Communicator(unsigned int peer_id, unsigned int num_peers, std::string config_path, bool sync = false);
 
         template<typename T>
-        void send(Comm::Data<T> buf, peer_num dest) {
+        void send(Comm::Data<T> buf, SMI::Utils::peer_num dest) {
             channel_data data {buf.data(), buf.size_in_bytes()};
             channels["S3"]->send(data, dest);
         }
 
         template<typename T>
-        void recv(Comm::Data<T> buf, peer_num dest) {
+        void recv(Comm::Data<T> buf, SMI::Utils::peer_num dest) {
             channel_data data {buf.data(), buf.size_in_bytes()};
             channels["S3"]->recv(data, dest);
         }
 
         template <typename T>
-        void reduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, peer_num root, SMI::Utils::Function<T> f);
+        void reduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f);
 
         template <typename T>
         void allreduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);
 
         template<typename T>
-        void gather(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, peer_num root);
+        void gather(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::peer_num root);
 
         template<typename T>
-        void scatter(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, peer_num root);
+        void scatter(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::peer_num root);
 
         template<typename T>
-        void bcast(Comm::Data<T> buf, peer_num root);
+        void bcast(Comm::Data<T> buf, SMI::Utils::peer_num root);
 
         template<typename T>
         void scan(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);
@@ -43,6 +43,8 @@ namespace SMI {
 
     private:
         std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> channels;
+        SMI::Utils::peer_num peer_id;
+        SMI::Utils::peer_num num_peers;
     };
 }
 

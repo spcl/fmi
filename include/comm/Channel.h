@@ -5,8 +5,8 @@
 #include <string>
 #include <map>
 #include "../utils/Function.h"
+#include "../utils/Common.h"
 
-using peer_num = unsigned int;
 using raw_function = std::function<char*(char*, char*)>;
 
 struct channel_data {
@@ -19,9 +19,9 @@ struct channel_data {
 namespace SMI::Comm {
     class Channel {
     public:
-        virtual void send(channel_data buf, peer_num dest) = 0;
+        virtual void send(channel_data buf, SMI::Utils::peer_num dest) = 0;
 
-        virtual void recv(channel_data buf, peer_num dest) = 0;
+        virtual void recv(channel_data buf, SMI::Utils::peer_num dest) = 0;
 
         /*virtual void reduce(channel_data sendbuf, channel_data recvbuf, peer_num root, raw_function f) = 0;
 
@@ -35,7 +35,12 @@ namespace SMI::Comm {
 
         virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;*/
 
+        virtual void set_peer_id(SMI::Utils::peer_num num) { peer_id = num; }
+
         static std::shared_ptr<Channel> get_channel(std::string name, std::map<std::string, std::string> params);
+
+    protected:
+        SMI::Utils::peer_num peer_id;
 
     };
 

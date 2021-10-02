@@ -7,8 +7,6 @@
 #include <aws/s3/S3Client.h>
 #include <aws/core/Aws.h>
 #include <boost/interprocess/streams/bufferstream.hpp>
-#include <aws/s3/model/PutObjectRequest.h>
-#include <aws/s3/model/GetObjectRequest.h>
 
 namespace SMI::Comm {
     class S3 : public CentralChannel {
@@ -19,14 +17,16 @@ namespace SMI::Comm {
 
         void upload(channel_data buf, std::string name) override;
 
-        void download(channel_data buf, std::string name) override;
+        void download(channel_data buf, std::string name, bool cleanup) override;
 
     private:
         std::string bucket_name;
-        std::unique_ptr<Aws::S3::S3Client> client;
+        std::unique_ptr<Aws::S3::S3Client, Aws::Deleter<Aws::S3::S3Client>> client;
         Aws::SDKOptions options;
         unsigned int timeout;
         unsigned int max_timeout;
+
+        void delete_file(std::string name);
     };
 }
 
