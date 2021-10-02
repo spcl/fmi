@@ -25,6 +25,8 @@ namespace SMI::Comm {
         std::string bucket_name;
         std::unique_ptr<Aws::S3::S3Client> client;
         Aws::SDKOptions options;
+        unsigned int timeout;
+        unsigned int max_timeout;
     };
 }
 

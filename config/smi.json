@@ -3,7 +3,9 @@
     "S3": {
       "enabled": true,
       "bucket_name": "romanboe-uploadtest",
-      "s3_region": "eu-central-1"
+      "s3_region": "eu-central-1",
+      "timeout": 100,
+      "max_timeout": 1000
     }
   }
 }

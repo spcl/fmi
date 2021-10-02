@@ -12,11 +12,14 @@ namespace SMI {
         template<typename T>
         void send(Comm::Data<T> buf, peer_num dest) {
             channel_data data {buf.data(), buf.size_in_bytes()};
-            channels["S3"]->send(data, 0);
+            channels["S3"]->send(data, dest);
         }
 
         template<typename T>
-        void recv(Comm::Data<T> buf, peer_num dest);
+        void recv(Comm::Data<T> buf, peer_num dest) {
+            channel_data data {buf.data(), buf.size_in_bytes()};
+            channels["S3"]->recv(data, dest);
+        }
 
         template <typename T>
         void reduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, peer_num root, SMI::Utils::Function<T> f);
