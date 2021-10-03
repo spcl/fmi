@@ -43,5 +43,59 @@ BOOST_AUTO_TEST_CASE(sending_receiving) {
     BOOST_TEST(d_mult.get() == d_mult_rcv.get(), boost::test_tools::per_element());
 }
 
+BOOST_AUTO_TEST_CASE(bcast) {
+    constexpr int num_peers = 4;
+    std::vector<SMI::Comm::Data<int>> d(num_peers);
+    d[0] = 1;
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->bcast(d[tid], 0);
+    }
+    for (int i = 0; i < num_peers; i++) {
+        BOOST_CHECK_EQUAL(d[i], 1);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(scatter) {
+    constexpr int num_peers = 4;
+    SMI::Comm::Data<std::vector<int>> root_data{{1,2,3,4}};
+    std::vector<SMI::Comm::Data<std::vector<int>>> d(num_peers, SMI::Comm::Data<std::vector<int>>(1));
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->scatter(root_data, d[tid], 0);
+    }
+    for (int i = 0; i < num_peers; i++) {
+        BOOST_CHECK_EQUAL(d[i].get()[0], i + 1);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(gather) {
+    constexpr int num_peers = 4;
+    SMI::Comm::Data<std::vector<int>> root_data(num_peers);
+
+    std::vector<SMI::Comm::Data<std::vector<int>>> d(num_peers);
+    for (int i = 0; i < num_peers; i++) {
+        std::vector<int> data(1, i + 1);
+        d[i] = SMI::Comm::Data<std::vector<int>>(data);
+    }
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->gather(d[tid], root_data, 0);
+    }
+    std::vector<int> expected{{1,2,3,4}};
+    BOOST_TEST(root_data.get() == expected, boost::test_tools::per_element());
+}
 
 BOOST_AUTO_TEST_SUITE_END();

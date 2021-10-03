@@ -12,7 +12,7 @@ namespace SMI {
         ~Communicator();
 
         template<typename T>
-        void send(Comm::Data<T> buf, SMI::Utils::peer_num dest) {
+        void send(Comm::Data<T> &buf, SMI::Utils::peer_num dest) {
             channel_data data {buf.data(), buf.size_in_bytes()};
             channels["S3"]->send(data, dest);
         }
@@ -23,20 +23,31 @@ namespace SMI {
             channels["S3"]->recv(data, src);
         }
 
+        template<typename T>
+        void bcast(Comm::Data<T> &buf, SMI::Utils::peer_num root) {
+            channel_data data {buf.data(), buf.size_in_bytes()};
+            channels["S3"]->bcast(data, root);
+        }
+
+        template<typename T>
+        void gather(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
+            channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
+            channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
+            channels["S3"]->gather(senddata, recvdata, root);
+        }
+
+        template<typename T>
+        void scatter(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
+            channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
+            channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
+            channels["S3"]->scatter(senddata, recvdata, root);
+        }
+
         template <typename T>
         void reduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f);
 
         template <typename T>
         void allreduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);
-
-        template<typename T>
-        void gather(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::peer_num root);
-
-        template<typename T>
-        void scatter(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::peer_num root);
-
-        template<typename T>
-        void bcast(Comm::Data<T> buf, SMI::Utils::peer_num root);
 
         template<typename T>
         void scan(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);
