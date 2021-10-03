@@ -8,12 +8,12 @@
 
 char TAG[] = "S3Client";
 
-SMI::Comm::S3::S3(std::map<std::string, std::string> params, bool init_api) {
-    if (init_api) {
+SMI::Comm::S3::S3(std::map<std::string, std::string> params) {
+    if (instances == 0) {
         // Only one call allowed (https://github.com/aws/aws-sdk-cpp/issues/456), give possible multiple clients control over initialization
         Aws::InitAPI(options);
-        has_initialized = true;
     }
+    instances++;
     bucket_name = params["bucket_name"];
     Aws::Client::ClientConfiguration config;
     config.region = params["s3_region"];
@@ -25,7 +25,8 @@ SMI::Comm::S3::S3(std::map<std::string, std::string> params, bool init_api) {
 }
 
 SMI::Comm::S3::~S3() {
-    if (has_initialized) {
+    instances--;
+    if (instances == 0) {
         Aws::ShutdownAPI(options);
     }
 }
