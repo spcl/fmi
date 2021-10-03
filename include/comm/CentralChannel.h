@@ -15,6 +15,8 @@ namespace SMI::Comm {
 
         void barrier() override;
 
+        void reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) override;
+
         virtual void upload_object(channel_data buf, std::string name) = 0;
 
         virtual bool download_object(channel_data buf, std::string name) = 0;
@@ -32,7 +34,8 @@ namespace SMI::Comm {
     protected:
         std::map<std::string, unsigned int> num_operations = {
                 {"bcast", 0},
-                {"barrier", 0}
+                {"barrier", 0},
+                {"reduce", 0}
         };
         std::vector<std::string> created_objects;
         unsigned int timeout;

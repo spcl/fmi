@@ -7,7 +7,11 @@
 #include "../utils/Function.h"
 #include "../utils/Common.h"
 
-using raw_function = std::function<char*(char*, char*)>;
+struct raw_function {
+    std::function<void(char*, char*)> f; // Overwrites left arg.
+    bool associative;
+    bool commutative;
+};
 
 struct channel_data {
     char* buf;
@@ -31,7 +35,8 @@ namespace SMI::Comm {
 
         virtual void scatter(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root);
 
-        /*virtual void reduce(channel_data sendbuf, channel_data recvbuf, peer_num root, raw_function f) = 0;
+        virtual void reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) = 0;
+        /*;
 
         virtual void allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;
 

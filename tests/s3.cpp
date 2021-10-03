@@ -2,6 +2,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include "../include/comm/Channel.h"
 #include "../include/comm/S3.h"
+#include <numeric>
 #include <omp.h>
 
 std::map<std::string, std::string> s3_test_params = {
@@ -247,4 +248,36 @@ BOOST_AUTO_TEST_CASE(scatter_multiple) {
         BOOST_TEST(rcv_vals[i] == expected, boost::test_tools::per_element());
     }
 
+}
+
+BOOST_AUTO_TEST_CASE(reduce_single) {
+    constexpr int num_peers = 2;
+    std::vector<int> vals {1,2};
+    auto ch_root = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    ch_root->set_peer_id(0);
+    ch_root->set_comm_name("Test");
+    ch_root->set_num_peers(num_peers);
+
+    std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers - 1);
+
+    auto f = [] (char* a, char* b) {
+        int* dest = reinterpret_cast<int*>(a);
+        *dest = ((int) *a + (int) *b);
+    };
+    for (int i = 1; i < num_peers; i++) {
+        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+        ch_rcv->set_peer_id(i);
+        ch_rcv->set_num_peers(num_peers);
+        ch_rcv->set_comm_name("Test");
+        ch_rcv->reduce({reinterpret_cast<char*>(&vals[i]), sizeof(vals[i])}, {}, 0, {f, true, true});
+        channels[i - 1] = ch_rcv;
+    }
+    int res;
+    ch_root->reduce({reinterpret_cast<char*>(&vals[0]), sizeof(vals[0])},
+                    {reinterpret_cast<char*>(&res), sizeof(res)}, 0, {f, true, true});
+    for (int i = 0; i < num_peers - 1; i++) {
+        channels[i]->finalize();
+    }
+    ch_root->finalize();
+    BOOST_TEST(res == std::accumulate(vals.begin(), vals.end(), 0));
 }
