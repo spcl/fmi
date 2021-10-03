@@ -120,3 +120,65 @@ BOOST_AUTO_TEST_CASE(barrier_succ) {
     ch_2->finalize();
     BOOST_TEST(elapsed_ms < std::stoi(s3_test_params["max_timeout"]));
 }
+
+BOOST_AUTO_TEST_CASE(gather_one) {
+    constexpr int num_peers = 2;
+    std::vector<int> vals {1,2};
+    auto ch_root = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    ch_root->set_peer_id(0);
+    ch_root->set_comm_name("Test");
+    ch_root->set_num_peers(num_peers);
+    std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers - 1);
+
+    for (int i = 1; i < num_peers; i++) {
+        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+        ch_rcv->set_peer_id(i);
+        ch_rcv->set_num_peers(num_peers);
+        ch_rcv->set_comm_name("Test");
+        ch_rcv->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()}, {}, 0);
+        channels[i - 1] = ch_rcv;
+    }
+    std::vector<int> vals_rcv(num_peers * 2, 0);
+    ch_root->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()},
+                    {reinterpret_cast<char*>(vals_rcv.data()), sizeof(vals[0]) * vals_rcv.size()},  0);
+    std::vector<int> expected(num_peers * 2, 1);
+    for (int i = 1; i < expected.size(); i += 2) {
+        expected[i] = 2;
+    }
+    ch_root->finalize();
+    for (int i = 1; i < num_peers; i++) {
+        channels[i - 1]->finalize();
+    }
+    BOOST_TEST(vals_rcv == expected, boost::test_tools::per_element());
+}
+
+BOOST_AUTO_TEST_CASE(gather_multiple) {
+    constexpr int num_peers = 4;
+    std::vector<int> vals {1,2};
+    auto ch_root = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    ch_root->set_peer_id(0);
+    ch_root->set_comm_name("Test");
+    ch_root->set_num_peers(num_peers);
+    std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers - 1);
+
+    for (int i = 1; i < num_peers; i++) {
+        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+        ch_rcv->set_peer_id(i);
+        ch_rcv->set_num_peers(num_peers);
+        ch_rcv->set_comm_name("Test");
+        ch_rcv->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()}, {}, 0);
+        channels[i - 1] = ch_rcv;
+    }
+    std::vector<int> vals_rcv(num_peers * 2, 0);
+    ch_root->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()},
+                    {reinterpret_cast<char*>(vals_rcv.data()), sizeof(vals[0]) * vals_rcv.size()},  0);
+    std::vector<int> expected(num_peers * 2, 1);
+    for (int i = 1; i < expected.size(); i += 2) {
+        expected[i] = 2;
+    }
+    ch_root->finalize();
+    for (int i = 1; i < num_peers; i++) {
+        channels[i - 1]->finalize();
+    }
+    BOOST_TEST(vals_rcv == expected, boost::test_tools::per_element());
+}

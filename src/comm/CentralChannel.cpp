@@ -62,7 +62,9 @@ void SMI::Comm::CentralChannel::barrier() {
 }
 
 void SMI::Comm::CentralChannel::finalize() {
-    std::for_each(created_objects.begin(), created_objects.end(), [this] (auto &object_name) { delete_object(object_name); });
+    for (const auto& object_name : created_objects) {
+        delete_object(object_name);
+    }
 }
 
 void SMI::Comm::CentralChannel::download(channel_data buf, std::string name) {
