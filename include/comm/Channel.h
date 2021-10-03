@@ -29,12 +29,13 @@ namespace SMI::Comm {
 
         virtual void gather(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root);
 
+        virtual void scatter(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root);
+
         /*virtual void reduce(channel_data sendbuf, channel_data recvbuf, peer_num root, raw_function f) = 0;
 
         virtual void allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;
 
 
-        virtual void scatter(channel_data sendbuf, channel_data recvbuf, peer_num root) = 0;
 
 
         virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;*/

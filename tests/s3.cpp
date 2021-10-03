@@ -182,3 +182,69 @@ BOOST_AUTO_TEST_CASE(gather_multiple) {
     }
     BOOST_TEST(vals_rcv == expected, boost::test_tools::per_element());
 }
+
+BOOST_AUTO_TEST_CASE(scatter_one) {
+    constexpr int num_peers = 2;
+    std::vector<int> root_vals {1,2,3,4};
+    auto ch_root = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    ch_root->set_peer_id(0);
+    ch_root->set_comm_name("Test");
+    ch_root->set_num_peers(num_peers);
+
+    std::vector<std::vector<int>> rcv_vals(num_peers);
+    rcv_vals[0].resize(2);
+    ch_root->scatter({reinterpret_cast<char*>(root_vals.data()), sizeof(root_vals[0]) * root_vals.size()},
+                    {reinterpret_cast<char*>(rcv_vals[0].data()), sizeof(rcv_vals[0][0]) * rcv_vals[0].size()}, 0);
+    for (int i = 1; i < num_peers; i++) {
+        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+        ch_rcv->set_peer_id(i);
+        ch_rcv->set_num_peers(num_peers);
+        ch_rcv->set_comm_name("Test");
+        rcv_vals[i].resize(2);
+        ch_rcv->scatter({}, {reinterpret_cast<char*>(rcv_vals[i].data()), sizeof(rcv_vals[i][0]) * rcv_vals[i].size()}, 0);
+        ch_rcv->finalize();
+    }
+
+
+    ch_root->finalize();
+    for (int i = 0; i < num_peers; i++) {
+        std::vector<int> expected(2);
+        expected[0] = 2 * i + 1;
+        expected[1] = 2 * i + 2;
+        BOOST_TEST(rcv_vals[i] == expected, boost::test_tools::per_element());
+    }
+
+}
+
+BOOST_AUTO_TEST_CASE(scatter_multiple) {
+    constexpr int num_peers = 4;
+    std::vector<int> root_vals {1,2,3,4,5,6,7,8};
+    auto ch_root = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    ch_root->set_peer_id(0);
+    ch_root->set_comm_name("Test");
+    ch_root->set_num_peers(num_peers);
+
+    std::vector<std::vector<int>> rcv_vals(num_peers);
+    rcv_vals[0].resize(2);
+    ch_root->scatter({reinterpret_cast<char*>(root_vals.data()), sizeof(root_vals[0]) * root_vals.size()},
+                     {reinterpret_cast<char*>(rcv_vals[0].data()), sizeof(rcv_vals[0][0]) * rcv_vals[0].size()}, 0);
+    for (int i = 1; i < num_peers; i++) {
+        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params, false);
+        ch_rcv->set_peer_id(i);
+        ch_rcv->set_num_peers(num_peers);
+        ch_rcv->set_comm_name("Test");
+        rcv_vals[i].resize(2);
+        ch_rcv->scatter({}, {reinterpret_cast<char*>(rcv_vals[i].data()), sizeof(rcv_vals[i][0]) * rcv_vals[i].size()}, 0);
+        ch_rcv->finalize();
+    }
+
+
+    ch_root->finalize();
+    for (int i = 0; i < num_peers; i++) {
+        std::vector<int> expected(2);
+        expected[0] = 2 * i + 1;
+        expected[1] = 2 * i + 2;
+        BOOST_TEST(rcv_vals[i] == expected, boost::test_tools::per_element());
+    }
+
+}
