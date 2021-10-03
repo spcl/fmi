@@ -87,7 +87,7 @@ void SMI::Comm::CentralChannel::upload(channel_data buf, std::string name) {
 
 void SMI::Comm::CentralChannel::reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) {
     if (peer_id == root) {
-        bool left_to_right = !(f.commutative && f.associative); // TODO
+        bool left_to_right = !(f.commutative && f.associative);
         std::vector<bool> received(num_peers, false);
         std::vector<bool> applied(num_peers, false);
         auto buffer_length = sendbuf.len;
@@ -108,10 +108,13 @@ void SMI::Comm::CentralChannel::reduce(channel_data sendbuf, channel_data recvbu
                 }
             }
             // Apply function where possible
+            bool all_left_applied = true;
             for (int i = 0; i < num_peers; i++) {
-                if (received[i] && !applied[i]) {
+                if (received[i] && !applied[i] && (!left_to_right || all_left_applied)) {
                     f.f(recvbuf.buf, data.data() + i * buffer_length);
                     applied[i] = true;
+                } else if (!received[i]) {
+                    all_left_applied = false;
                 }
             }
 
@@ -131,7 +134,7 @@ void SMI::Comm::CentralChannel::scan(channel_data sendbuf, channel_data recvbuf,
         std::string file_name = comm_name + std::to_string(peer_id) + "_scan_" + std::to_string(num_operations["scan"]);
         upload(sendbuf, file_name);
     }
-    bool left_to_right = !(f.commutative && f.associative); // TODO
+    bool left_to_right = !(f.commutative && f.associative);
     auto num_data = peer_id + 1;
     std::vector<bool> received(num_data, false);
     std::vector<bool> applied(num_data, false);
@@ -153,10 +156,13 @@ void SMI::Comm::CentralChannel::scan(channel_data sendbuf, channel_data recvbuf,
             }
         }
         // Apply function where possible
+        bool all_left_applied = true;
         for (int i = 0; i < num_peers; i++) {
-            if (received[i] && !applied[i]) {
+            if (received[i] && !applied[i] && (!left_to_right || all_left_applied)) {
                 f.f(recvbuf.buf, data.data() + i * buffer_length);
                 applied[i] = true;
+            } else if (!received[i]) {
+                all_left_applied = false;
             }
         }
 
