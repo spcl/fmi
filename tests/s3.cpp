@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(sending_receiving) {
     ch_send->send(buf, 1);
     ch_send->set_comm_name(comm_name);
 
-    std::shared_ptr<SMI::Comm::Channel> ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+    auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
     // Receiving
     int recv;
     channel_data recv_buf {reinterpret_cast<char*>(&recv), sizeof(recv)};
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(sending_receiving_mult_times) {
     ch_send->send({reinterpret_cast<char*>(&val1), sizeof(val1)}, 1);
     ch_send->send({reinterpret_cast<char*>(&val2), sizeof(val2)}, 1);
 
-    std::shared_ptr<SMI::Comm::Channel> ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+    auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
     // Receiving
     int recv1, recv2;
     ch_rcv->set_peer_id(1);
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(bcast) {
     ch_send->bcast({reinterpret_cast<char*>(&vals[0]), sizeof(vals[0])}, 0);
 
     for (int i = 1; i < num_peers; i++) {
-        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+        auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
         ch_rcv->set_peer_id(i);
         ch_rcv->set_comm_name(comm_name);
         ch_rcv->bcast({reinterpret_cast<char*>(&vals[i]), sizeof(vals[i])}, 0);
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(barrier_unsucc) {
 
 BOOST_AUTO_TEST_CASE(barrier_succ) {
     auto ch_1 = SMI::Comm::Channel::get_channel("S3", s3_test_params);
-    auto ch_2 = std::make_shared<SMI::Comm::S3>(s3_test_params);
+    auto ch_2 = SMI::Comm::Channel::get_channel("S3", s3_test_params);
     ch_1->set_peer_id(0);
     ch_1->set_num_peers(2);
     ch_1->set_comm_name(comm_name);
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(gather_one) {
     std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers - 1);
 
     for (int i = 1; i < num_peers; i++) {
-        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+        auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
         ch_rcv->set_peer_id(i);
         ch_rcv->set_num_peers(num_peers);
         ch_rcv->set_comm_name(comm_name);
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(gather_multiple) {
     std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers - 1);
 
     for (int i = 1; i < num_peers; i++) {
-        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+        auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
         ch_rcv->set_peer_id(i);
         ch_rcv->set_num_peers(num_peers);
         ch_rcv->set_comm_name(comm_name);
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(scatter_one) {
     ch_root->scatter({reinterpret_cast<char*>(root_vals.data()), sizeof(root_vals[0]) * root_vals.size()},
                     {reinterpret_cast<char*>(rcv_vals[0].data()), sizeof(rcv_vals[0][0]) * rcv_vals[0].size()}, 0);
     for (int i = 1; i < num_peers; i++) {
-        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+        auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
         ch_rcv->set_peer_id(i);
         ch_rcv->set_num_peers(num_peers);
         ch_rcv->set_comm_name(comm_name);
@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(scatter_multiple) {
     ch_root->scatter({reinterpret_cast<char*>(root_vals.data()), sizeof(root_vals[0]) * root_vals.size()},
                      {reinterpret_cast<char*>(rcv_vals[0].data()), sizeof(rcv_vals[0][0]) * rcv_vals[0].size()}, 0);
     for (int i = 1; i < num_peers; i++) {
-        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+        auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
         ch_rcv->set_peer_id(i);
         ch_rcv->set_num_peers(num_peers);
         ch_rcv->set_comm_name(comm_name);
@@ -268,7 +268,7 @@ BOOST_AUTO_TEST_CASE(reduce_single) {
         *dest = ((int) *a + (int) *b);
     };
     for (int i = 1; i < num_peers; i++) {
-        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+        auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
         ch_rcv->set_peer_id(i);
         ch_rcv->set_num_peers(num_peers);
         ch_rcv->set_comm_name(comm_name);
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(reduce_multiple) {
         *dest = ((int) *a * (int) *b);
     };
     for (int i = 1; i < num_peers; i++) {
-        auto ch_rcv = std::make_shared<SMI::Comm::S3>(s3_test_params);
+        auto ch_rcv = SMI::Comm::Channel::get_channel("S3", s3_test_params);
         ch_rcv->set_peer_id(i);
         ch_rcv->set_num_peers(num_peers);
         ch_rcv->set_comm_name(comm_name);
