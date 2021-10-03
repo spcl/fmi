@@ -38,10 +38,8 @@ namespace SMI::Comm {
         virtual void reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) = 0;
 
         virtual void allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f);
-        /*;
 
-
-        virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;*/
+        virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;
 
         void set_peer_id(SMI::Utils::peer_num num) { peer_id = num; }
 

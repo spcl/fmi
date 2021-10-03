@@ -87,7 +87,7 @@ void SMI::Comm::CentralChannel::upload(channel_data buf, std::string name) {
 
 void SMI::Comm::CentralChannel::reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) {
     if (peer_id == root) {
-        bool left_to_right = !(f.commutative && f.associative);
+        bool left_to_right = !(f.commutative && f.associative); // TODO
         std::vector<bool> received(num_peers, false);
         std::vector<bool> applied(num_peers, false);
         auto buffer_length = sendbuf.len;
@@ -124,4 +124,45 @@ void SMI::Comm::CentralChannel::reduce(channel_data sendbuf, channel_data recvbu
         num_operations["reduce"]++;
         upload(sendbuf, file_name);
     }
+}
+
+void SMI::Comm::CentralChannel::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+    if (peer_id != num_peers - 1) {
+        std::string file_name = comm_name + std::to_string(peer_id) + "_scan_" + std::to_string(num_operations["scan"]);
+        upload(sendbuf, file_name);
+    }
+    bool left_to_right = !(f.commutative && f.associative); // TODO
+    auto num_data = peer_id + 1;
+    std::vector<bool> received(num_data, false);
+    std::vector<bool> applied(num_data, false);
+    auto buffer_length = sendbuf.len;
+    std::vector<char> data(buffer_length * num_data);
+    std::memcpy(reinterpret_cast<void*>(recvbuf.buf), sendbuf.buf, buffer_length);
+    received[peer_id] = true;
+    applied[peer_id] = true;
+    unsigned int elapsed_time = 0;
+    while (elapsed_time < max_timeout && std::any_of(applied.begin(), applied.end(), [] (bool v) { return !v; }) ) {
+        // Receive all values
+        for (int i = 0; i < num_data; i++) {
+            if (received[i]) {
+                continue;
+            }
+            std::string file_name = comm_name + std::to_string(i) + "_scan_" + std::to_string(num_operations["scan"]);
+            if (download_object({data.data() + i * buffer_length, buffer_length}, file_name)) {
+                received[i] = true;
+            }
+        }
+        // Apply function where possible
+        for (int i = 0; i < num_peers; i++) {
+            if (received[i] && !applied[i]) {
+                f.f(recvbuf.buf, data.data() + i * buffer_length);
+                applied[i] = true;
+            }
+        }
+
+        elapsed_time += timeout;
+        std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
+    }
+
+    num_operations["scan"]++;
 }
