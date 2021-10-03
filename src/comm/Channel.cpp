@@ -40,3 +40,8 @@ void SMI::Comm::Channel::scatter(channel_data sendbuf, channel_data recvbuf, SMI
         recv(recvbuf, root);
     }
 }
+
+void SMI::Comm::Channel::allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+    reduce(sendbuf, recvbuf, 0, f);
+    bcast(recvbuf, 0);
+}

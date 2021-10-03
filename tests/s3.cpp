@@ -316,3 +316,38 @@ BOOST_AUTO_TEST_CASE(reduce_multiple) {
     ch_root->finalize();
     BOOST_TEST(res == std::accumulate(vals.begin(), vals.end(), 1, std::multiplies<int>()));
 }
+
+BOOST_AUTO_TEST_CASE(allreduce) {
+    constexpr int num_peers = 4;
+    std::vector<int> vals {1,2,3,4};
+    auto ch_root = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+    ch_root->set_peer_id(0);
+    ch_root->set_comm_name(comm_name);
+    ch_root->set_num_peers(num_peers);
+
+    std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers);
+    std::vector<int> results(num_peers);
+
+    auto f = [] (char* a, char* b) {
+        int* dest = reinterpret_cast<int*>(a);
+        *dest = ((int) *a * (int) *b);
+    };
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        auto ch = SMI::Comm::Channel::get_channel("S3", s3_test_params);
+        ch->set_peer_id(tid);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        channels[tid] = ch;
+        ch->allreduce({reinterpret_cast<char*>(&vals[tid]), sizeof(vals[tid])},
+                      {reinterpret_cast<char*>(&results[tid]), sizeof(results[tid])}, {f, true, true});
+    }
+
+
+    for (int i = 0; i < num_peers; i++) {
+        channels[i]->finalize();
+        BOOST_TEST(results[i] == std::accumulate(vals.begin(), vals.end(), 1, std::multiplies<int>()));
+    }
+
+}
