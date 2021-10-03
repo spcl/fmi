@@ -7,7 +7,9 @@
 namespace SMI {
     class Communicator {
     public:
-        Communicator(unsigned int peer_id, unsigned int num_peers, std::string config_path, bool sync = false);
+        Communicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name);
+
+        ~Communicator();
 
         template<typename T>
         void send(Comm::Data<T> buf, SMI::Utils::peer_num dest) {
@@ -16,9 +18,9 @@ namespace SMI {
         }
 
         template<typename T>
-        void recv(Comm::Data<T> buf, SMI::Utils::peer_num dest) {
+        void recv(Comm::Data<T> &buf, SMI::Utils::peer_num src) {
             channel_data data {buf.data(), buf.size_in_bytes()};
-            channels["S3"]->recv(data, dest);
+            channels["S3"]->recv(data, src);
         }
 
         template <typename T>
@@ -45,6 +47,7 @@ namespace SMI {
         std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> channels;
         SMI::Utils::peer_num peer_id;
         SMI::Utils::peer_num num_peers;
+        std::string comm_name;
     };
 }
 

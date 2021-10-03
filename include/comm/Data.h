@@ -23,13 +23,17 @@ namespace SMI::Comm {
             return reinterpret_cast<char*>(&val);
         }
 
-        T get() {
+        T get() const {
             return val;
         }
 
-        friend std::ostream& operator<<( std::ostream& o, Data& t ) {
+        friend std::ostream& operator<<( std::ostream& o, const Data& t ) {
             o << t.get();
             return o;
+        }
+
+        friend bool operator==(const Data& lhs, const Data& rhs) {
+            return lhs.get() == rhs.get();
         }
 
     private:
@@ -40,6 +44,8 @@ namespace SMI::Comm {
     template<typename A>
     class Data<std::vector<A>> {
     public:
+        Data() = default;
+        Data(std::size_t n) : val(n) {}
         Data(std::vector<A> value) : val(value) {}
 
         std::size_t size_in_bytes() {
@@ -50,7 +56,7 @@ namespace SMI::Comm {
             return reinterpret_cast<char*>(val.data());
         }
 
-        std::vector<A> get() {
+        std::vector<A> get() const {
             return val;
         }
 
@@ -61,6 +67,7 @@ namespace SMI::Comm {
     template<>
     class Data<void*> {
     public:
+        Data() = default;
         Data(void* buf, std::size_t len) : buf(buf), len(len) {}
 
         std::size_t size_in_bytes() {

@@ -1,10 +1,12 @@
-#define BOOST_TEST_MODULE S3
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
+
 #include "../include/comm/Channel.h"
 #include "../include/comm/S3.h"
 #include <numeric>
 #include <ctime>
 #include <omp.h>
+
+BOOST_AUTO_TEST_SUITE(S3);
 
 std::map<std::string, std::string> s3_test_params = {
         {"bucket_name", "romanboe-uploadtest"},
@@ -388,3 +390,5 @@ BOOST_AUTO_TEST_CASE(scan) {
     }
 
 }
+
+BOOST_AUTO_TEST_SUITE_END();
