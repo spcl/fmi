@@ -5,14 +5,16 @@ namespace SMI::Utils {
     template<typename T>
     class Function {
     public:
-        Function(std::function<T(T,T)> f, bool commutative) : f(f), commutative(commutative) {}
+        Function(std::function<T(T,T)> f, bool commutative, bool associative) : f(f), commutative(commutative), associative(associative) {}
 
-        T operator()(T a, T b) {
+        T operator()(T a, T b) const {
             return f(a, b);
         }
+
+        bool commutative;
+        bool associative;
     private:
         std::function<T(T,T)> f;
-        bool commutative;
     };
 }
 

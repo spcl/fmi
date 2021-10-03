@@ -44,7 +44,20 @@ namespace SMI {
         }
 
         template <typename T>
-        void reduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f);
+        void reduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f) {
+            channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
+            channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
+            auto func = [f](char* a, char* b) -> void {
+                T* dest = reinterpret_cast<T*>(a);
+                *dest = f((T) *a, (T) *b);
+            };
+            raw_function raw_f {
+                func,
+                f.associative,
+                f.commutative
+            };
+            channels["S3"]->reduce(senddata, recvdata, root, raw_f);
+        }
 
         template <typename T>
         void allreduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);

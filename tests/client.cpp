@@ -16,7 +16,7 @@ int main() {
     char data[5];
     SMI::Comm::Data<void*> d2(data, 5);
 
-    SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true);
+    SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true, true);
 
 
 

@@ -98,4 +98,23 @@ BOOST_AUTO_TEST_CASE(gather) {
     BOOST_TEST(root_data.get() == expected, boost::test_tools::per_element());
 }
 
+BOOST_AUTO_TEST_CASE(reduce) {
+    constexpr int num_peers = 4;
+    std::vector<SMI::Comm::Data<int>> data(num_peers);
+    SMI::Comm::Data<int> res;
+    for (int i = 0; i < num_peers; i++) {
+        data[i] = i + 1;
+    }
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+    SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true, true);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->reduce(data[tid], res, 0, f);
+    }
+    BOOST_CHECK_EQUAL(res, 10);
+}
+
 BOOST_AUTO_TEST_SUITE_END();
