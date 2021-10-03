@@ -117,4 +117,48 @@ BOOST_AUTO_TEST_CASE(reduce) {
     BOOST_CHECK_EQUAL(res, 10);
 }
 
+BOOST_AUTO_TEST_CASE(allreduce) {
+    constexpr int num_peers = 4;
+    std::vector<SMI::Comm::Data<int>> data(num_peers);
+    std::vector<SMI::Comm::Data<int>> res(num_peers);
+    for (int i = 0; i < num_peers; i++) {
+        data[i] = i + 1;
+    }
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+    SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true, true);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->allreduce(data[tid], res[tid], f);
+    }
+    for (int i = 0; i < num_peers; i++) {
+        BOOST_CHECK_EQUAL(res[i], 10);
+    }
+}
+
+BOOST_AUTO_TEST_CASE(scan) {
+    constexpr int num_peers = 4;
+    std::vector<SMI::Comm::Data<int>> data(num_peers);
+    std::vector<SMI::Comm::Data<int>> res(num_peers);
+    for (int i = 0; i < num_peers; i++) {
+        data[i] = i + 1;
+    }
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+    SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true, true);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->scan(data[tid], res[tid], f);
+    }
+    int prefix_sum = 0;
+    for (int i = 0; i < num_peers; i++) {
+        prefix_sum += i + 1;
+        BOOST_CHECK_EQUAL(res[i], prefix_sum);
+    }
+}
+
 BOOST_AUTO_TEST_SUITE_END();

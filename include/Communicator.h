@@ -60,10 +60,36 @@ namespace SMI {
         }
 
         template <typename T>
-        void allreduce(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);
+        void allreduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
+            channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
+            channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
+            auto func = [f](char* a, char* b) -> void {
+                T* dest = reinterpret_cast<T*>(a);
+                *dest = f((T) *a, (T) *b);
+            };
+            raw_function raw_f {
+                func,
+                f.associative,
+                f.commutative
+            };
+            channels["S3"]->allreduce(senddata, recvdata, raw_f);
+        }
 
         template<typename T>
-        void scan(Comm::Data<T> sendbuf, Comm::Data<T> recvbuf, SMI::Utils::Function<T> f);
+        void scan(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
+            channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
+            channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
+            auto func = [f](char* a, char* b) -> void {
+                T* dest = reinterpret_cast<T*>(a);
+                *dest = f((T) *a, (T) *b);
+            };
+            raw_function raw_f {
+                func,
+                f.associative,
+                f.commutative
+            };
+            channels["S3"]->scan(senddata, recvdata, raw_f);
+        }
 
         void register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel>);
 
