@@ -9,7 +9,7 @@ namespace SMI::Utils {
         //int test = root.get<int>("test");
     }
 
-    std::map<std::string, std::map<std::string, std::string>> Configuration::get_backends() {
+    std::map<std::string, std::map<std::string, std::string>> Configuration::get_active_channels() {
         std::map<std::string, std::map<std::string, std::string>> backends;
         auto backends_tree = root.get_child("backends");
         for (const auto& kv : backends_tree) {
@@ -19,6 +19,9 @@ namespace SMI::Utils {
                 std::string param_name = backend_tree.first;
                 std::string param_val = backend_tree.second.data();
                 backend_params[param_name] = param_val;
+            }
+            if (backend_params.count("enabled") && backend_params["enabled"] != "true") {
+                continue;
             }
             backends[backend_name] = backend_params;
         }

@@ -3,6 +3,7 @@
 
 #include "./utils/Configuration.h"
 #include "comm/Channel.h"
+#include "utils/ChannelPolicy.h"
 
 namespace SMI {
     class Communicator {
@@ -13,38 +14,44 @@ namespace SMI {
 
         template<typename T>
         void send(Comm::Data<T> &buf, SMI::Utils::peer_num dest) {
+            std::string channel = policy->get_channel({Utils::send, buf.size_in_bytes()});
             channel_data data {buf.data(), buf.size_in_bytes()};
-            channels["S3"]->send(data, dest);
+            channels[channel]->send(data, dest);
         }
 
         template<typename T>
         void recv(Comm::Data<T> &buf, SMI::Utils::peer_num src) {
+            std::string channel = policy->get_channel({ Utils::send, buf.size_in_bytes() });
             channel_data data {buf.data(), buf.size_in_bytes()};
-            channels["S3"]->recv(data, src);
+            channels[channel]->recv(data, src);
         }
 
         template<typename T>
         void bcast(Comm::Data<T> &buf, SMI::Utils::peer_num root) {
+            std::string channel = policy->get_channel({ Utils::bcast, buf.size_in_bytes() });
             channel_data data {buf.data(), buf.size_in_bytes()};
-            channels["S3"]->bcast(data, root);
+            channels[channel]->bcast(data, root);
         }
 
         template<typename T>
         void gather(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
+            std::string channel = policy->get_channel({ Utils::gather, sendbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
-            channels["S3"]->gather(senddata, recvdata, root);
+            channels[channel]->gather(senddata, recvdata, root);
         }
 
         template<typename T>
         void scatter(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
+            std::string channel = policy->get_channel({ Utils::scatter, recvbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
-            channels["S3"]->scatter(senddata, recvdata, root);
+            channels[channel]->scatter(senddata, recvdata, root);
         }
 
         template <typename T>
         void reduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f) {
+            std::string channel = policy->get_channel({ Utils::reduce, sendbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             auto func = [f](char* a, char* b) -> void {
@@ -56,11 +63,12 @@ namespace SMI {
                 f.associative,
                 f.commutative
             };
-            channels["S3"]->reduce(senddata, recvdata, root, raw_f);
+            channels[channel]->reduce(senddata, recvdata, root, raw_f);
         }
 
         template <typename T>
         void allreduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
+            std::string channel = policy->get_channel({ Utils::allreduce, sendbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             auto func = [f](char* a, char* b) -> void {
@@ -72,11 +80,12 @@ namespace SMI {
                 f.associative,
                 f.commutative
             };
-            channels["S3"]->allreduce(senddata, recvdata, raw_f);
+            channels[channel]->allreduce(senddata, recvdata, raw_f);
         }
 
         template<typename T>
         void scan(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
+            std::string channel = policy->get_channel({ Utils::scan, sendbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             auto func = [f](char* a, char* b) -> void {
@@ -88,12 +97,15 @@ namespace SMI {
                 f.associative,
                 f.commutative
             };
-            channels["S3"]->scan(senddata, recvdata, raw_f);
+            channels[channel]->scan(senddata, recvdata, raw_f);
         }
 
         void register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel>);
 
+        void set_channel_policy(std::shared_ptr<SMI::Utils::ChannelPolicy> policy);
+
     private:
+        std::shared_ptr<SMI::Utils::ChannelPolicy> policy;
         std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> channels;
         SMI::Utils::peer_num peer_id;
         SMI::Utils::peer_num num_peers;

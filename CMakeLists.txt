@@ -9,7 +9,7 @@ find_package(AWSSDK COMPONENTS s3)
 find_package(hiredis REQUIRED)
 
 add_library(SMI SHARED src/Communicator.cpp src/utils/Configuration.cpp src/comm/Channel.cpp src/comm/CentralChannel.cpp
-                       include/comm/CentralChannel.h src/comm/S3.cpp src/comm/Redis.cpp)
+                       include/comm/CentralChannel.h src/comm/S3.cpp src/comm/Redis.cpp src/utils/ChannelPolicy.cpp)
 
 target_include_directories(SMI PRIVATE ${Boost_INCLUDE_DIRS})
 

@@ -12,7 +12,7 @@ namespace SMI::Utils {
     public:
         explicit Configuration(const std::string& config_path);
 
-        std::map<std::string, std::map<std::string, std::string>> get_backends();
+        std::map<std::string, std::map<std::string, std::string>> get_active_channels();
 
     private:
         boost::property_tree::ptree root;
