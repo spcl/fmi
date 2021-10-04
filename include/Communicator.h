@@ -51,13 +51,13 @@ namespace SMI {
 
         template <typename T>
         void reduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f) {
+            if (peer_id == root && sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
+                throw "Dimensions of send and receive data must match";
+            }
             std::string channel = policy->get_channel({ Utils::reduce, sendbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
-            auto func = [f](char* a, char* b) -> void {
-                T* dest = reinterpret_cast<T*>(a);
-                *dest = f((T) *a, (T) *b);
-            };
+            auto func = convert_to_raw_function(f, sendbuf.size_in_bytes());
             raw_function raw_f {
                 func,
                 f.associative,
@@ -68,13 +68,13 @@ namespace SMI {
 
         template <typename T>
         void allreduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
+            if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
+                throw "Dimensions of send and receive data must match";
+            }
             std::string channel = policy->get_channel({ Utils::allreduce, sendbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
-            auto func = [f](char* a, char* b) -> void {
-                T* dest = reinterpret_cast<T*>(a);
-                *dest = f((T) *a, (T) *b);
-            };
+            auto func = convert_to_raw_function(f, sendbuf.size_in_bytes());
             raw_function raw_f {
                 func,
                 f.associative,
@@ -85,13 +85,13 @@ namespace SMI {
 
         template<typename T>
         void scan(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
+            if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
+                throw "Dimensions of send and receive data must match";
+            }
             std::string channel = policy->get_channel({ Utils::scan, sendbuf.size_in_bytes() });
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
-            auto func = [f](char* a, char* b) -> void {
-                T* dest = reinterpret_cast<T*>(a);
-                *dest = f((T) *a, (T) *b);
-            };
+            auto func = convert_to_raw_function(f, sendbuf.size_in_bytes());
             raw_function raw_f {
                 func,
                 f.associative,
@@ -110,6 +110,26 @@ namespace SMI {
         SMI::Utils::peer_num peer_id;
         SMI::Utils::peer_num num_peers;
         std::string comm_name;
+
+        template <typename T>
+        raw_func convert_to_raw_function(SMI::Utils::Function<T> f, std::size_t size_in_bytes) {
+            auto func = [f](char* a, char* b) -> void {
+                T* dest = reinterpret_cast<T*>(a);
+                *dest = f((T) *a, (T) *b);
+            };
+            return func;
+        }
+
+        template <typename A>
+        raw_func convert_to_raw_function(SMI::Utils::Function<std::vector<A>> f, std::size_t size_in_bytes) {
+            auto func = [f, size_in_bytes](char* a, char* b) -> void {
+                std::vector<A> vec_a((A*) a, (A*) (a + size_in_bytes));
+                std::vector<A> vec_b((A*) b, (A*) (b + size_in_bytes));
+                std::vector<A> res = f(vec_a, vec_b);
+                std::memcpy(a, (char*) res.data(), size_in_bytes);
+            };
+            return func;
+        }
     };
 }
 

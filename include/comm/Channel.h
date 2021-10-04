@@ -7,8 +7,10 @@
 #include "../utils/Function.h"
 #include "../utils/Common.h"
 
+using raw_func = std::function<void(char*, char*)>;
+
 struct raw_function {
-    std::function<void(char*, char*)> f; // Overwrites left arg.
+    raw_func f; // Overwrites left arg.
     bool associative;
     bool commutative;
 };

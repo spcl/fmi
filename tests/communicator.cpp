@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(reduce) {
         data[i] = i + 1;
     }
     std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
-    SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true, true);
+    SMI::Utils::Function<int> f([] (auto a, auto b) {return a + b;}, true, true);
 
     #pragma omp parallel num_threads(num_peers)
     {
@@ -104,6 +104,28 @@ BOOST_AUTO_TEST_CASE(reduce) {
         comms[tid]->reduce(data[tid], res, 0, f);
     }
     BOOST_CHECK_EQUAL(res, 10);
+}
+
+BOOST_AUTO_TEST_CASE(reduce_vector) {
+    constexpr int num_peers = 4;
+    std::vector<SMI::Comm::Data<std::vector<int>>> data(num_peers);
+    SMI::Comm::Data<std::vector<int>> res(2);
+    for (int i = 0; i < num_peers; i++) {
+        data[i] = std::vector<int>{i + 1, 2 * (i + 1)};
+    }
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+    SMI::Utils::Function<std::vector<int>> f([] (auto a, auto b) {
+                                                    return std::vector<int>{a[0] + b[0], a[1] * b[1]};
+                                                },true, true);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->reduce(data[tid], res, 0, f);
+    }
+    std::vector<int> expected{1 + 2 + 3 + 4, 2 * 4 * 6 * 8};
+    BOOST_TEST(res.get() == expected, boost::test_tools::per_element());
 }
 
 BOOST_AUTO_TEST_CASE(allreduce) {
@@ -127,6 +149,32 @@ BOOST_AUTO_TEST_CASE(allreduce) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(allreduce_vector) {
+    constexpr int num_peers = 4;
+    std::vector<SMI::Comm::Data<std::vector<int>>> data(num_peers);
+    std::vector<SMI::Comm::Data<std::vector<int>>> res(num_peers);
+    for (int i = 0; i < num_peers; i++) {
+        data[i] = std::vector<int>{i + 1, 2 * (i + 1), i + 1};
+        res[i] = std::vector<int>(3);
+    }
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+    SMI::Utils::Function<std::vector<int>> f([] (auto a, auto b) {
+        return std::vector<int>{a[0] + b[0], a[1] * b[1], std::max(a[2], b[2])};
+        },true, true);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->allreduce(data[tid], res[tid], f);
+    }
+    std::vector<int> expected{1 + 2 + 3 + 4, 2 * 4 * 6 * 8, 4};
+    for (int i = 0; i < num_peers; i++) {
+        BOOST_TEST(res[i].get() == expected, boost::test_tools::per_element());
+    }
+
+}
+
 BOOST_AUTO_TEST_CASE(scan) {
     constexpr int num_peers = 4;
     std::vector<SMI::Comm::Data<int>> data(num_peers);
@@ -148,6 +196,37 @@ BOOST_AUTO_TEST_CASE(scan) {
         prefix_sum += i + 1;
         BOOST_CHECK_EQUAL(res[i], prefix_sum);
     }
+}
+
+BOOST_AUTO_TEST_CASE(scan_vector) {
+    constexpr int num_peers = 4;
+    std::vector<SMI::Comm::Data<std::vector<int>>> data(num_peers);
+    std::vector<SMI::Comm::Data<std::vector<int>>> res(num_peers);
+    for (int i = 0; i < num_peers; i++) {
+        data[i] = std::vector<int>{i + 1, 2 * (i + 1), i + 1};
+        res[i] = std::vector<int>(3);
+    }
+    std::vector<std::unique_ptr<SMI::Communicator>> comms(num_peers);
+    SMI::Utils::Function<std::vector<int>> f([] (auto a, auto b) {
+        return std::vector<int>{a[0] + b[0], a[1] * b[1], std::max(a[2], b[2])};
+        },true, true);
+
+    #pragma omp parallel num_threads(num_peers)
+    {
+        int tid = omp_get_thread_num();
+        comms[tid] = std::make_unique<SMI::Communicator>(tid, num_peers, config_path, comm_name);
+        comms[tid]->scan(data[tid], res[tid], f);
+    }
+    int prefix_sum = 0;
+    int product = 1;
+    for (int i = 0; i < num_peers; i++) {
+        prefix_sum += i + 1;
+        product *= 2 * (i + 1);
+        BOOST_CHECK_EQUAL(res[i].get()[0], prefix_sum);
+        BOOST_CHECK_EQUAL(res[i].get()[1], product);
+        BOOST_CHECK_EQUAL(res[i].get()[2], i + 1);
+    }
+
 }
 
 BOOST_AUTO_TEST_SUITE_END();
