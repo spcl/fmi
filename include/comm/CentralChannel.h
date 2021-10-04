@@ -2,11 +2,14 @@
 #define SMI_CENTRALCHANNEL_H
 
 #include "Channel.h"
+#include <map>
 #include "../utils/Common.h"
 
 namespace SMI::Comm {
     class CentralChannel : public Channel {
     public:
+        explicit CentralChannel(std::map<std::string, std::string> params);
+
         void send(channel_data buf, SMI::Utils::peer_num dest) override;
 
         void recv(channel_data buf, SMI::Utils::peer_num dest) override;

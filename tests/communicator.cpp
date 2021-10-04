@@ -6,17 +6,6 @@
 
 BOOST_AUTO_TEST_SUITE(Communicator);
 
-
-std::map<std::string, std::string> s3_test_params = {
-        {"bucket_name", "romanboe-uploadtest"},
-        {"s3_region", "eu-central-1"},
-        {"timeout", "100"},
-        {"max_timeout", "1000"}
-};
-std::map<std::string, std::map<std::string, std::string>> backends = {
-        {"S3", s3_test_params}
-};
-
 std::string comm_name = std::to_string(std::time(nullptr));
 std::string config_path = "../../config/smi_test.json";
 

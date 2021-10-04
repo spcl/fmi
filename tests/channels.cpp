@@ -15,6 +15,18 @@ std::map<std::string, std::string> s3_test_params = {
         {"max_timeout", "1000"}
 };
 
+std::map<std::string, std::string> redis_test_params = {
+        {"host", "127.0.0.1"},
+        {"port", "6379"},
+        {"timeout", "1"},
+        {"max_timeout", "1000"}
+};
+
+std::map<std::string, std::map<std::string, std::string>> backends = {
+        {"S3", s3_test_params},
+        {"Redis", redis_test_params}
+};
+
 std::string comm_name = std::to_string(std::time(nullptr));
 
 BOOST_AUTO_TEST_CASE(sending_receiving) {

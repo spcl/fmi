@@ -9,8 +9,6 @@
 #include <boost/interprocess/streams/bufferstream.hpp>
 
 namespace SMI::Comm {
-    static int S3_INSTANCES = 0; // Track instances to init / deinit only once
-
     class S3 : public CentralChannel {
     public:
         explicit S3(std::map<std::string, std::string> params);
@@ -21,16 +19,16 @@ namespace SMI::Comm {
 
         bool download_object(channel_data buf, std::string name) override;
 
+        void delete_object(std::string name) override;
+
         std::vector<std::string> get_object_names() override;
 
     private:
         std::string bucket_name;
         std::unique_ptr<Aws::S3::S3Client, Aws::Deleter<Aws::S3::S3Client>> client;
         Aws::SDKOptions options;
-        bool has_initialized = false;
         inline static int instances = 0;
 
-        void delete_object(std::string name) override;
     };
 }
 

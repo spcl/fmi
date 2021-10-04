@@ -172,3 +172,8 @@ void SMI::Comm::CentralChannel::scan(channel_data sendbuf, channel_data recvbuf,
 
     num_operations["scan"]++;
 }
+
+SMI::Comm::CentralChannel::CentralChannel(std::map<std::string, std::string> params) {
+    timeout = std::stoi(params["timeout"]);
+    max_timeout = std::stoi(params["max_timeout"]);
+}

@@ -8,7 +8,7 @@
 
 char TAG[] = "S3Client";
 
-SMI::Comm::S3::S3(std::map<std::string, std::string> params) {
+SMI::Comm::S3::S3(std::map<std::string, std::string> params) : CentralChannel(params) {
     if (instances == 0) {
         // Only one call allowed (https://github.com/aws/aws-sdk-cpp/issues/456), give possible multiple clients control over initialization
         Aws::InitAPI(options);
@@ -17,8 +17,6 @@ SMI::Comm::S3::S3(std::map<std::string, std::string> params) {
     bucket_name = params["bucket_name"];
     Aws::Client::ClientConfiguration config;
     config.region = params["s3_region"];
-    timeout = std::stoi(params["timeout"]);
-    max_timeout = std::stoi(params["max_timeout"]);
 
     auto credentialsProvider = Aws::MakeShared<Aws::Auth::EnvironmentAWSCredentialsProvider>(TAG);
     client = Aws::MakeUnique<Aws::S3::S3Client>(TAG, credentialsProvider, config);
