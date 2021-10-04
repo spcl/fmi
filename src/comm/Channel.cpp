@@ -1,9 +1,12 @@
 #include "../../include/comm/Channel.h"
 #include "../../include/comm/S3.h"
+#include "../../include/comm/Redis.h"
 
 std::shared_ptr<SMI::Comm::Channel> SMI::Comm::Channel::get_channel(std::string name, std::map<std::string, std::string> params) {
     if (name == "S3") {
         return std::make_shared<S3>(params);
+    } else if (name == "Redis") {
+        return std::make_shared<Redis>(params);
     } else {
         throw "Unknown channel name passed";
     }
