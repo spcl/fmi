@@ -49,7 +49,7 @@ namespace SMI::Comm {
 
         void set_comm_name(std::string communication_name) {comm_name = communication_name; }
 
-        virtual void finalize() = 0;
+        virtual void finalize() {};
 
         static std::shared_ptr<Channel> get_channel(std::string name, std::map<std::string, std::string> params);
 

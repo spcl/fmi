@@ -5,7 +5,9 @@
 #include "../include/utils/Function.h"
 #include "../include/comm/S3.h"
 #include "../include/comm/Redis.h"
+#include "../include/comm/Direct.h"
 #include <iostream>
+#include <omp.h>
 
 int main() {
     //SMI::Communicator comm(0, 1, "../config/SMI.json");
@@ -14,25 +16,27 @@ int main() {
     //std::cout << d << std::endl;
     SMI::Comm::Data<std::vector<int>> d1({1, 2, 3});
     char data[5];
+    char rcv[5];
+    data[0] = '1';
     SMI::Comm::Data<void*> d2(data, 5);
 
-    std::map<std::string, std::string> redis_test_params = {
+    std::map<std::string, std::string> direct_test_params = {
             {"host", "127.0.0.1"},
-            {"port", "6379"},
-            {"timeout", "1"},
-            {"max_timeout", "1000"}
+            {"port", "10000"}
     };
 
-    SMI::Comm::Redis comm(redis_test_params);
-    data[0] = '1';
-    char rcv[5];
-    comm.upload_object({data, sizeof(data)}, "Test2");
-    comm.download_object({rcv, sizeof(rcv)}, "Test2");
-    comm.delete_object("Test");
-    auto keys = comm.get_object_names();
+    #pragma omp parallel num_threads(2)
+    {
+        int tid = omp_get_thread_num();
+        SMI::Comm::Direct comm(direct_test_params);
+        comm.set_num_peers(2);
+        comm.set_peer_id(tid);
+        if (tid == 0)
+            comm.send_object({data, sizeof(data)}, 1);
+        if (tid == 1)
+            comm.recv_object({rcv, sizeof(rcv)}, 0);
+    }
     std::cout << rcv[0] << std::endl;
-    for (auto key : keys)
-        std::cout << key << '\n';
 
 
 

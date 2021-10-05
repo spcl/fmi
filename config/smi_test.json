@@ -13,6 +13,11 @@
       "port": 6379,
       "timeout": 1,
       "max_timeout": 1000
+    },
+    "Direct": {
+      "enabled": false,
+      "host": "127.0.0.1",
+      "port": 10000
     }
   }
 }
