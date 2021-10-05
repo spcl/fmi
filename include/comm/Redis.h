@@ -1,14 +1,14 @@
 #ifndef SMI_REDIS_H
 #define SMI_REDIS_H
 
-#include "CentralChannel.h"
+#include "ClientServer.h"
 #include <map>
 #include <string>
 #include <hiredis/hiredis.h>
 
 namespace SMI::Comm {
 
-    class Redis : public CentralChannel {
+    class Redis : public ClientServer {
     public:
         explicit Redis(std::map<std::string, std::string> params);
 

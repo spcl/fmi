@@ -1,7 +1,7 @@
 #ifndef SMI_S3_H
 #define SMI_S3_H
 
-#include "CentralChannel.h"
+#include "ClientServer.h"
 #include <map>
 #include <string>
 #include <aws/s3/S3Client.h>
@@ -9,7 +9,7 @@
 #include <boost/interprocess/streams/bufferstream.hpp>
 
 namespace SMI::Comm {
-    class S3 : public CentralChannel {
+    class S3 : public ClientServer {
     public:
         explicit S3(std::map<std::string, std::string> params);
 

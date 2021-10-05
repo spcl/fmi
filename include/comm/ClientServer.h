@@ -1,14 +1,14 @@
-#ifndef SMI_CENTRALCHANNEL_H
-#define SMI_CENTRALCHANNEL_H
+#ifndef SMI_CLIENTSERVER_H
+#define SMI_CLIENTSERVER_H
 
 #include "Channel.h"
 #include <map>
 #include "../utils/Common.h"
 
 namespace SMI::Comm {
-    class CentralChannel : public Channel {
+    class ClientServer : public Channel {
     public:
-        explicit CentralChannel(std::map<std::string, std::string> params);
+        explicit ClientServer(std::map<std::string, std::string> params);
 
         void send(channel_data buf, SMI::Utils::peer_num dest) override;
 
@@ -51,4 +51,4 @@ namespace SMI::Comm {
 
 
 
-#endif //SMI_CENTRALCHANNEL_H
+#endif //SMI_CLIENTSERVER_H

@@ -1,7 +1,7 @@
 #include "../../include/comm/Redis.h"
 #include <boost/log/trivial.hpp>
 
-SMI::Comm::Redis::Redis(std::map<std::string, std::string> params) : CentralChannel(params) {
+SMI::Comm::Redis::Redis(std::map<std::string, std::string> params) : ClientServer(params) {
     std::string hostname = params["host"];
     auto port = std::stoi(params["port"]);
     context = redisConnect(hostname.c_str(), port);

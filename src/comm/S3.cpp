@@ -8,7 +8,7 @@
 
 char TAG[] = "S3Client";
 
-SMI::Comm::S3::S3(std::map<std::string, std::string> params) : CentralChannel(params) {
+SMI::Comm::S3::S3(std::map<std::string, std::string> params) : ClientServer(params) {
     if (instances == 0) {
         // Only one call allowed (https://github.com/aws/aws-sdk-cpp/issues/456), give possible multiple clients control over initialization
         Aws::InitAPI(options);
