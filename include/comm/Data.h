@@ -3,6 +3,8 @@
 
 #include <any>
 #include <vector>
+#include <ostream>
+#include <functional>
 
 namespace SMI::Comm {
     template<typename T>

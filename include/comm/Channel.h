@@ -4,6 +4,7 @@
 #include "Data.h"
 #include <string>
 #include <map>
+#include <memory>
 #include "../utils/Function.h"
 #include "../utils/Common.h"
 

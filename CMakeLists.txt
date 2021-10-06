@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.10)
 project(SMI)
 set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(Boost COMPONENTS json log REQUIRED)
+find_package(Boost COMPONENTS log REQUIRED)
 find_package(AWSSDK COMPONENTS s3 REQUIRED)
 find_package(hiredis REQUIRED)
 

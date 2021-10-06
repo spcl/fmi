@@ -1,5 +1,6 @@
 #include "../../include/comm/ClientServer.h"
 #include <thread>
+#include <cstring>
 
 void SMI::Comm::ClientServer::send(channel_data buf, SMI::Utils::peer_num dest) {
     auto num_operation_entry = num_operations.find("send" + std::to_string(dest));
