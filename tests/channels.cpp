@@ -5,6 +5,8 @@
 #include <numeric>
 #include <ctime>
 #include <omp.h>
+#include <sys/mman.h>
+#include <sys/wait.h>
 
 BOOST_AUTO_TEST_SUITE(Channels);
 
@@ -23,7 +25,7 @@ std::map<std::string, std::string> redis_test_params = {
 };
 
 std::map<std::string, std::string> direct_test_params = {
-        {"host", "127.0.0.1"},
+        {"host", "192.168.0.166"},
         {"port", "10000"}
 };
 
@@ -33,7 +35,7 @@ std::map<std::string, std::map<std::string, std::string>> backends = {
         {"Direct", direct_test_params}
 };
 
-std::string comm_name = std::to_string(std::time(nullptr));
+std::string comm_name = std::to_string(std::time(nullptr)) + "Tests";
 
 BOOST_AUTO_TEST_CASE(sending_receiving) {
     for (auto const & backend_data : backends) {
@@ -94,24 +96,37 @@ BOOST_AUTO_TEST_CASE(sending_receiving_mult_times) {
 }
 
 BOOST_AUTO_TEST_CASE(bcast) {
-    for (auto const & [channel_name, test_params] : backends) {
-        constexpr int num_peers = 4;
-        std::vector<int> vals(num_peers);
+    for (auto const & backend_data : backends) {
+        // Using many threads leads to race conditions (in the AWS SDK, raw sockets, hiredis, ...), therefore processes are used for these tests
+        auto channel_name = backend_data.first;
+        auto test_params = backend_data.second;
+        constexpr int num_peers = 21;
+        int* vals = static_cast<int*>(mmap(nullptr, num_peers * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         vals[0] = 42;
-        auto ch_send = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        ch_send->set_peer_id(0);
-        ch_send->set_comm_name(comm_name);
-        ch_send->bcast({reinterpret_cast<char*>(&vals[0]), sizeof(vals[0])}, 0);
-
-        for (int i = 1; i < num_peers; i++) {
-            auto ch_rcv = SMI::Comm::Channel::get_channel(channel_name, test_params);
-            ch_rcv->set_peer_id(i);
-            ch_rcv->set_comm_name(comm_name);
-            ch_rcv->bcast({reinterpret_cast<char*>(&vals[i]), sizeof(vals[i])}, 0);
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
         }
-        std::vector<int> expected(num_peers, 42);
-        ch_send->finalize();
-        BOOST_TEST(vals == expected, boost::test_tools::per_element());
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        ch->bcast({reinterpret_cast<char*>(&vals[peer_id]), sizeof(vals[peer_id])}, 0);
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            for (int i = 0; i < num_peers; i++) {
+                BOOST_CHECK_EQUAL(vals[i], 42);
+            }
+        } else {
+            exit(0);
+        }
+
     }
 }
 
