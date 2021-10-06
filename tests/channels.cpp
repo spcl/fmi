@@ -100,9 +100,10 @@ BOOST_AUTO_TEST_CASE(bcast) {
         // Using many threads leads to race conditions (in the AWS SDK, raw sockets, hiredis, ...), therefore processes are used for these tests
         auto channel_name = backend_data.first;
         auto test_params = backend_data.second;
+        SMI::Utils::peer_num root = 14;
         constexpr int num_peers = 21;
         int* vals = static_cast<int*>(mmap(nullptr, num_peers * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
-        vals[0] = 42;
+        vals[root] = 42;
         int peer_id = 0;
         for (int i = 1; i < num_peers; i ++) {
             int pid = fork();
@@ -115,7 +116,7 @@ BOOST_AUTO_TEST_CASE(bcast) {
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
-        ch->bcast({reinterpret_cast<char*>(&vals[peer_id]), sizeof(vals[peer_id])}, 0);
+        ch->bcast({reinterpret_cast<char*>(&vals[peer_id]), sizeof(vals[peer_id])}, root);
         ch->finalize();
         if (peer_id == 0) {
             int status = 0;

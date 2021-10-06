@@ -21,6 +21,9 @@ namespace SMI::Comm {
         virtual void send_object(channel_data buf, Utils::peer_num peer_id) = 0;
 
         virtual void recv_object(channel_data buf, Utils::peer_num peer_id) = 0;
+
+    private:
+        Utils::peer_num transform_peer_id(Utils::peer_num id, Utils::peer_num root, bool forward);
     };
 }
 
