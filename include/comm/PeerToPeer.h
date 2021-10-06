@@ -8,7 +8,7 @@ namespace SMI::Comm {
     public:
         void send(channel_data buf, SMI::Utils::peer_num dest) override;
 
-        void recv(channel_data buf, SMI::Utils::peer_num dest) override;
+        void recv(channel_data buf, SMI::Utils::peer_num src) override;
 
         void bcast(channel_data buf, SMI::Utils::peer_num root) override;
 

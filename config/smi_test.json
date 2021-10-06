@@ -8,14 +8,14 @@
       "max_timeout": 1000
     },
     "Redis": {
-      "enabled": true,
+      "enabled": false,
       "host": "127.0.0.1",
       "port": 6379,
       "timeout": 1,
       "max_timeout": 1000
     },
     "Direct": {
-      "enabled": false,
+      "enabled": true,
       "host": "127.0.0.1",
       "port": 10000
     }

@@ -22,61 +22,72 @@ std::map<std::string, std::string> redis_test_params = {
         {"max_timeout", "1000"}
 };
 
+std::map<std::string, std::string> direct_test_params = {
+        {"host", "127.0.0.1"},
+        {"port", "10000"}
+};
+
 std::map<std::string, std::map<std::string, std::string>> backends = {
         //{"S3", s3_test_params},
-        {"Redis", redis_test_params}
+        //{"Redis", redis_test_params},
+        {"Direct", direct_test_params}
 };
 
 std::string comm_name = std::to_string(std::time(nullptr));
 
 BOOST_AUTO_TEST_CASE(sending_receiving) {
-    for (auto const & [channel_name, test_params] : backends) {
-        auto ch_send = SMI::Comm::Channel::get_channel(channel_name, test_params);
+    for (auto const & backend_data : backends) {
+        // Using C++ 17 [key, val] : map syntax here does not compile (on some clang versions) in combination with the omp section because of a clang bug:
+        // https://stackoverflow.com/questions/65819317/openmp-clang-sometimes-fail-with-a-variable-declared-from-structured-binding
+        auto channel_name = backend_data.first;
+        auto test_params = backend_data.second;
 
-        // Sending
         int val = 42;
-        channel_data buf {reinterpret_cast<char*>(&val), sizeof(val)};
-        ch_send->set_peer_id(0);
-        ch_send->send(buf, 1);
-        ch_send->set_comm_name(comm_name);
-
-        auto ch_rcv = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        // Receiving
         int recv;
-        channel_data recv_buf {reinterpret_cast<char*>(&recv), sizeof(recv)};
-        ch_rcv->set_peer_id(1);
-        ch_rcv->recv(recv_buf, 0);
-        ch_rcv->set_comm_name(comm_name);
-
-        ch_send->finalize();
-        ch_rcv->finalize();
+        #pragma omp parallel num_threads(2)
+        {
+            int tid = omp_get_thread_num();
+            auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+            ch->set_peer_id(tid);
+            ch->set_num_peers(2);
+            ch->set_comm_name(comm_name);
+            if (tid == 0) {
+                channel_data buf {reinterpret_cast<char*>(&val), sizeof(val)};
+                ch->send(buf, 1);
+            } else if (tid == 1) {
+                channel_data recv_buf {reinterpret_cast<char*>(&recv), sizeof(recv)};
+                ch->recv(recv_buf, 0);
+            }
+            ch->finalize();
+        }
         BOOST_CHECK_EQUAL(val, recv);
     }
 }
 
 BOOST_AUTO_TEST_CASE(sending_receiving_mult_times) {
-    for (auto const & [channel_name, test_params] : backends) {
-        auto ch_send = SMI::Comm::Channel::get_channel(channel_name, test_params);
+    for (auto const & backend_data : backends) {
+        auto channel_name = backend_data.first;
+        auto test_params = backend_data.second;
 
-        // Sending
         int val1 = 42;
         int val2 = 4242;
-        ch_send->set_peer_id(0);
-        ch_send->set_comm_name(comm_name);
-        ch_send->send({reinterpret_cast<char*>(&val1), sizeof(val1)}, 1);
-        ch_send->send({reinterpret_cast<char*>(&val2), sizeof(val2)}, 1);
-
-        auto ch_rcv = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        // Receiving
         int recv1, recv2;
-        ch_rcv->set_peer_id(1);
-        ch_rcv->set_comm_name(comm_name);
-        ch_rcv->recv({reinterpret_cast<char*>(&recv1), sizeof(recv1)}, 0);
-        ch_rcv->recv({reinterpret_cast<char*>(&recv2), sizeof(recv2)}, 0);
-
-        ch_send->finalize();
-        ch_rcv->finalize();
-
+        #pragma omp parallel num_threads(2)
+        {
+            int tid = omp_get_thread_num();
+            auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+            ch->set_peer_id(tid);
+            ch->set_num_peers(2);
+            ch->set_comm_name(comm_name);
+            if (tid == 0) {
+                ch->send({reinterpret_cast<char*>(&val1), sizeof(val1)}, 1);
+                ch->send({reinterpret_cast<char*>(&val2), sizeof(val2)}, 1);
+            } else if (tid == 1) {
+                ch->recv({reinterpret_cast<char*>(&recv1), sizeof(recv1)}, 0);
+                ch->recv({reinterpret_cast<char*>(&recv2), sizeof(recv2)}, 0);
+            }
+            ch->finalize();
+        }
         BOOST_CHECK_EQUAL(val1, recv1);
         BOOST_CHECK_EQUAL(val2, recv2);
     }
