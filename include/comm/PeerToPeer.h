@@ -14,6 +14,10 @@ namespace SMI::Comm {
 
         void barrier() override;
 
+        void gather(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root) override;
+
+        void scatter(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root) override;
+
         void reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) override;
 
         void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) override;
