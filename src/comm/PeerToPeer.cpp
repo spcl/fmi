@@ -38,6 +38,30 @@ void SMI::Comm::PeerToPeer::barrier() {
 }
 
 void SMI::Comm::PeerToPeer::reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) {
+    bool left_to_right = !(f.commutative && f.associative);
+    if (left_to_right) {
+        reduce_ltr(sendbuf, recvbuf, root, f);
+    } else {
+        reduce_no_order(sendbuf, recvbuf, root, f);
+    }
+}
+
+void SMI::Comm::PeerToPeer::reduce_ltr(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f) {
+    if (peer_id == root) {
+        std::size_t tmpbuf_len = sendbuf.len * num_peers;
+        char* tmpbuf = new char[tmpbuf_len];
+        gather(sendbuf, {tmpbuf, tmpbuf_len}, root);
+        std::memcpy(reinterpret_cast<void*>(recvbuf.buf), tmpbuf, sendbuf.len);
+        for (std::size_t i = sendbuf.len; i < tmpbuf_len; i += sendbuf.len) {
+            f.f(recvbuf.buf, tmpbuf + i);
+        }
+        delete[] tmpbuf;
+    } else {
+        gather(sendbuf, {}, root);
+    }
+}
+
+void SMI::Comm::PeerToPeer::reduce_no_order(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f) {
 
 }
 

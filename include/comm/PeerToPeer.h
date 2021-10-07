@@ -26,8 +26,14 @@ namespace SMI::Comm {
 
         virtual void recv_object(channel_data buf, Utils::peer_num peer_id) = 0;
 
+    protected:
+        void reduce_ltr(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f);
+
+        void reduce_no_order(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f);
+
     private:
         Utils::peer_num transform_peer_id(Utils::peer_num id, Utils::peer_num root, bool forward);
+
     };
 }
 

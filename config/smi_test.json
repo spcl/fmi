@@ -17,7 +17,8 @@
     "Direct": {
       "enabled": true,
       "host": "192.168.0.166",
-      "port": 10000
+      "port": 10000,
+      "max_timeout": 1000
     }
   }
 }
