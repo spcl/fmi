@@ -27,7 +27,14 @@ void SMI::Comm::PeerToPeer::bcast(channel_data buf, SMI::Utils::peer_num root) {
 }
 
 void SMI::Comm::PeerToPeer::barrier() {
-
+    char send = 1;
+    if (peer_id == 0) {
+        char* recv_buffer = new char[num_peers];
+        gather({&send, sizeof(char)}, {recv_buffer, num_peers * sizeof(char)}, 0);
+    } else {
+        gather({&send, sizeof(char)}, {}, 0);
+    }
+    bcast({&send, sizeof(char)}, 0);
 }
 
 void SMI::Comm::PeerToPeer::reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) {

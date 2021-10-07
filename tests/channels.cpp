@@ -26,7 +26,8 @@ std::map<std::string, std::string> redis_test_params = {
 
 std::map<std::string, std::string> direct_test_params = {
         {"host", "192.168.0.166"},
-        {"port", "10000"}
+        {"port", "10000"},
+        {"max_timeout", "1000"}
 };
 
 std::map<std::string, std::map<std::string, std::string>> backends = {
@@ -135,15 +136,41 @@ BOOST_AUTO_TEST_CASE(barrier_unsucc) {
     for (auto const & backend_data : backends) {
         auto channel_name = backend_data.first;
         auto test_params = backend_data.second;
-        auto ch_1 = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        ch_1->set_peer_id(0);
-        ch_1->set_num_peers(2);
-        ch_1->set_comm_name(comm_name);
+        constexpr int num_peers = 4;
+        bool* caught = static_cast<bool*>(mmap(nullptr, num_peers * sizeof(bool), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
+        }
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
         std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
-        ch_1->barrier();
-        std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
-        auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(after - bef).count();
-        BOOST_TEST(elapsed_ms > std::stoi(test_params["max_timeout"]));
+        if (peer_id != 1) {
+            try {
+                ch->barrier();
+            } catch (SMI::Utils::Timeout) {
+                caught[peer_id] = true;
+            }
+
+        }
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            for (int i = 0; i < num_peers; i++) {
+                if (i != 1) {
+                    BOOST_CHECK_EQUAL(caught[i], true);
+                }
+            }
+        } else {
+            exit(0);
+        }
     }
 }
 
@@ -151,32 +178,31 @@ BOOST_AUTO_TEST_CASE(barrier_succ) {
     for (auto const & backend_data : backends) {
         auto channel_name = backend_data.first;
         auto test_params = backend_data.second;
-        auto ch_1 = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        auto ch_2 = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        ch_1->set_peer_id(0);
-        ch_1->set_num_peers(2);
-        ch_1->set_comm_name(comm_name);
-        ch_2->set_peer_id(1);
-        ch_2->set_num_peers(2);
-        ch_2->set_comm_name(comm_name);
-        std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
-        #pragma omp parallel num_threads(2)
-        {
-            int tid = omp_get_thread_num();
-            if (tid == 0) {
-                ch_1->barrier();
-            } else {
-                ch_2->barrier();
+        constexpr int num_peers = 2;
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
             }
         }
-
-
-        std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
-        auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(after - bef).count();
-
-        ch_1->finalize();
-        ch_2->finalize();
-        BOOST_TEST(elapsed_ms < std::stoi(test_params["max_timeout"]));
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        std::chrono::steady_clock::time_point bef = std::chrono::steady_clock::now();
+        ch->barrier();
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            std::chrono::steady_clock::time_point after = std::chrono::steady_clock::now();
+            auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(after - bef).count();
+            BOOST_TEST(elapsed_ms < std::stoi(test_params["max_timeout"]));
+        } else {
+            exit(0);
+        }
     }
 
 }

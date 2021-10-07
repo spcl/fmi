@@ -16,6 +16,7 @@ namespace SMI::Comm {
         std::vector<int> sockets;
         std::string hostname;
         int port;
+        unsigned int max_timeout;
 
         void check_socket(Utils::peer_num partner_id, std::string pair_name);
     };
