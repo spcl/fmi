@@ -35,6 +35,7 @@ void SMI::Comm::Direct::check_socket(SMI::Utils::peer_num partner_id, std::strin
         tv.tv_sec = 0;
         tv.tv_usec = 0;
         setsockopt(sockets[partner_id], SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
+        setsockopt(sockets[partner_id], SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv);
     }
 }
 

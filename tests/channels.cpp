@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(bcast) {
         auto channel_name = backend_data.first;
         auto test_params = backend_data.second;
         SMI::Utils::peer_num root = 14;
-        constexpr int num_peers = 21;
+        constexpr int num_peers = 32;
         int* vals = static_cast<int*>(mmap(nullptr, num_peers * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         vals[root] = 42;
         int peer_id = 0;
@@ -184,66 +184,79 @@ BOOST_AUTO_TEST_CASE(barrier_succ) {
 BOOST_AUTO_TEST_CASE(gather_one) {
     for (auto const & [channel_name, test_params] : backends) {
         constexpr int num_peers = 2;
-        std::vector<int> vals {1,2};
-        auto ch_root = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        ch_root->set_peer_id(0);
-        ch_root->set_comm_name(comm_name);
-        ch_root->set_num_peers(num_peers);
-        std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers - 1);
+        std::vector<int> vals {1,2,3,4};
+        SMI::Utils::peer_num root = 1;
 
-        for (int i = 1; i < num_peers; i++) {
-            auto ch_rcv = SMI::Comm::Channel::get_channel(channel_name, test_params);
-            ch_rcv->set_peer_id(i);
-            ch_rcv->set_num_peers(num_peers);
-            ch_rcv->set_comm_name(comm_name);
-            ch_rcv->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()}, {}, 0);
-            channels[i - 1] = ch_rcv;
+        int* rcv_vals = static_cast<int*>(mmap(nullptr, num_peers * 2 * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
         }
-        std::vector<int> vals_rcv(num_peers * 2, 0);
-        ch_root->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()},
-                        {reinterpret_cast<char*>(vals_rcv.data()), sizeof(vals[0]) * vals_rcv.size()},  0);
-        std::vector<int> expected(num_peers * 2, 1);
-        for (int i = 1; i < expected.size(); i += 2) {
-            expected[i] = 2;
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        if (peer_id == root) {
+            ch->gather({reinterpret_cast<char*>(vals.data() + 2 * peer_id), sizeof(vals[0]) * 2},
+                        {reinterpret_cast<char*>(rcv_vals), sizeof(int) * num_peers * 2}, root);
+        } else {
+            ch->gather({reinterpret_cast<char*>(vals.data() + 2 * peer_id), sizeof(vals[0]) * 2}, {}, root);
         }
-        ch_root->finalize();
-        for (int i = 1; i < num_peers; i++) {
-            channels[i - 1]->finalize();
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            for (int i = 0; i < num_peers; i++) {
+                BOOST_CHECK_EQUAL(rcv_vals[i], i + 1);
+            }
+        } else {
+            exit(0);
         }
-        BOOST_TEST(vals_rcv == expected, boost::test_tools::per_element());
     }
 }
 
 BOOST_AUTO_TEST_CASE(gather_multiple) {
     for (auto const & [channel_name, test_params] : backends) {
-        constexpr int num_peers = 4;
-        std::vector<int> vals {1,2};
-        auto ch_root = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        ch_root->set_peer_id(0);
-        ch_root->set_comm_name(comm_name);
-        ch_root->set_num_peers(num_peers);
-        std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers - 1);
+        constexpr int num_peers = 14;
+        std::vector<int> vals(2 * num_peers);
+        for (int i = 0; i < vals.size(); i++) {
+            vals[i] = i + 1;
+        }
+        SMI::Utils::peer_num root = 0;
 
-        for (int i = 1; i < num_peers; i++) {
-            auto ch_rcv = SMI::Comm::Channel::get_channel(channel_name, test_params);
-            ch_rcv->set_peer_id(i);
-            ch_rcv->set_num_peers(num_peers);
-            ch_rcv->set_comm_name(comm_name);
-            ch_rcv->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()}, {}, 0);
-            channels[i - 1] = ch_rcv;
+        int* rcv_vals = static_cast<int*>(mmap(nullptr, num_peers * 2 * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
         }
-        std::vector<int> vals_rcv(num_peers * 2, 0);
-        ch_root->gather({reinterpret_cast<char*>(vals.data()), sizeof(vals[0]) * vals.size()},
-                        {reinterpret_cast<char*>(vals_rcv.data()), sizeof(vals[0]) * vals_rcv.size()},  0);
-        std::vector<int> expected(num_peers * 2, 1);
-        for (int i = 1; i < expected.size(); i += 2) {
-            expected[i] = 2;
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        if (peer_id == root) {
+            ch->gather({reinterpret_cast<char*>(vals.data() + 2 * peer_id), sizeof(vals[0]) * 2},
+                       {reinterpret_cast<char*>(rcv_vals), sizeof(int) * num_peers * 2}, root);
+        } else {
+            ch->gather({reinterpret_cast<char*>(vals.data() + 2 * peer_id), sizeof(vals[0]) * 2}, {}, root);
         }
-        ch_root->finalize();
-        for (int i = 1; i < num_peers; i++) {
-            channels[i - 1]->finalize();
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            for (int i = 0; i < num_peers; i++) {
+                BOOST_CHECK_EQUAL(rcv_vals[i], i + 1);
+            }
+        } else {
+            exit(0);
         }
-        BOOST_TEST(vals_rcv == expected, boost::test_tools::per_element());
     }
 }
 
@@ -287,12 +300,12 @@ BOOST_AUTO_TEST_CASE(scatter_one) {
 
 BOOST_AUTO_TEST_CASE(scatter_multiple) {
     for (auto const & [channel_name, test_params] : backends) {
-        constexpr int num_peers = 8;
+        constexpr int num_peers = 14;
         std::vector<int> root_vals(2 * num_peers);
         for (int i = 0; i < root_vals.size(); i++) {
             root_vals[i] = i + 1;
         }
-        SMI::Utils::peer_num root = 6;
+        SMI::Utils::peer_num root = 3;
 
         int* rcv_vals = static_cast<int*>(mmap(nullptr, num_peers * 2 * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
