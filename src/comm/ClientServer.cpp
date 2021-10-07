@@ -60,6 +60,7 @@ void SMI::Comm::ClientServer::barrier() {
             std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
         }
     }
+    throw Utils::Timeout();
 }
 
 void SMI::Comm::ClientServer::finalize() {
@@ -79,6 +80,7 @@ void SMI::Comm::ClientServer::download(channel_data buf, std::string name) {
             std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
         }
     }
+    throw Utils::Timeout();
 }
 
 void SMI::Comm::ClientServer::upload(channel_data buf, std::string name) {
@@ -123,6 +125,9 @@ void SMI::Comm::ClientServer::reduce(channel_data sendbuf, channel_data recvbuf,
             std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
         }
         num_operations["reduce"]++;
+        if (std::any_of(applied.begin(), applied.end(), [] (bool v) { return !v; })) {
+            throw Utils::Timeout();
+        }
     } else {
         std::string file_name = comm_name + std::to_string(peer_id) + "_reduce_" + std::to_string(num_operations["reduce"]);
         num_operations["reduce"]++;
@@ -170,7 +175,9 @@ void SMI::Comm::ClientServer::scan(channel_data sendbuf, channel_data recvbuf, r
         elapsed_time += timeout;
         std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
     }
-
+    if (std::any_of(applied.begin(), applied.end(), [] (bool v) { return !v; })) {
+        throw Utils::Timeout();
+    }
     num_operations["scan"]++;
 }
 
