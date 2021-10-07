@@ -115,7 +115,7 @@ namespace SMI {
         raw_func convert_to_raw_function(SMI::Utils::Function<T> f, std::size_t size_in_bytes) {
             auto func = [f](char* a, char* b) -> void {
                 T* dest = reinterpret_cast<T*>(a);
-                *dest = f((T) *a, (T) *b);
+                *dest = f(*((T*) a), *((T*) b));
             };
             return func;
         }
