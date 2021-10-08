@@ -457,44 +457,93 @@ BOOST_AUTO_TEST_CASE(reduce_multiple_ltr) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(allreduce) {
+BOOST_AUTO_TEST_CASE(allreduce_multiple) {
     for (auto const & backend_data : backends) {
-        // Using C++ 17 [key, val] : map syntax here does not compile (on some clang versions) in combination with the omp section because of a clang bug:
-        // https://stackoverflow.com/questions/65819317/openmp-clang-sometimes-fail-with-a-variable-declared-from-structured-binding
         auto channel_name = backend_data.first;
         auto test_params = backend_data.second;
-        constexpr int num_peers = 4;
-        std::vector<int> vals {1,2,3,4};
-        auto ch_root = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        ch_root->set_peer_id(0);
-        ch_root->set_comm_name(comm_name);
-        ch_root->set_num_peers(num_peers);
-
-        std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers);
-        std::vector<int> results(num_peers);
-
+        SMI::Utils::peer_num root = 5;
+        constexpr int num_peers = 13;
+        int* res = static_cast<int*>(mmap(nullptr, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
+        }
         auto f = [] (char* a, char* b) {
             int* dest = reinterpret_cast<int*>(a);
-            *dest = ((int) *a * (int) *b);
+            *dest = *((int*) a) * *((int*) b);
         };
-
-        #pragma omp parallel num_threads(num_peers)
-        {
-            int tid = omp_get_thread_num();
-            auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
-            ch->set_peer_id(tid);
-            ch->set_num_peers(num_peers);
-            ch->set_comm_name(comm_name);
-            channels[tid] = ch;
-            ch->allreduce({reinterpret_cast<char*>(&vals[tid]), sizeof(vals[tid])},
-                          {reinterpret_cast<char*>(&results[tid]), sizeof(results[tid])}, {f, true, true});
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        int val = peer_id + 1;
+        if (peer_id == root) {
+            ch->reduce({reinterpret_cast<char*>(&val), sizeof(int)}, {reinterpret_cast<char*>(res), sizeof(int)}, root, {f, true, true});
+        } else {
+            ch->reduce({reinterpret_cast<char*>(&val), sizeof(int)}, {}, root, {f, true, true});
         }
 
-
-        for (int i = 0; i < num_peers; i++) {
-            channels[i]->finalize();
-            BOOST_TEST(results[i] == std::accumulate(vals.begin(), vals.end(), 1, std::multiplies<int>()));
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            int expected = 1;
+            for (int i = 1; i < num_peers; i++) {
+                expected *= (i + 1);
+            }
+            BOOST_CHECK_EQUAL(expected, *res);
+        } else {
+            exit(0);
         }
+
+    }
+}
+
+BOOST_AUTO_TEST_CASE(allreduce_multiple_ltr) {
+    for (auto const & backend_data : backends) {
+        auto channel_name = backend_data.first;
+        auto test_params = backend_data.second;
+        SMI::Utils::peer_num root = 0;
+        constexpr int num_peers = 8;
+        int* res = static_cast<int*>(mmap(nullptr, num_peers * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
+        }
+        auto f = [] (char* a, char* b) {
+            int* dest = reinterpret_cast<int*>(a);
+            *dest = *((int*) a) - *((int*) b);
+        };
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        int val = peer_id + 1;
+        ch->allreduce({reinterpret_cast<char*>(&val), sizeof(int)}, {reinterpret_cast<char*>(res + peer_id), sizeof(int)}, {f, false, false});
+
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            int expected = 1;
+            for (int i = 1; i < num_peers; i++) {
+                expected -= (i + 1);
+            }
+            for (int i = 0; i < num_peers; i++) {
+                BOOST_CHECK_EQUAL(expected, res[i]);
+            }
+        } else {
+            exit(0);
+        }
+
     }
 }
 

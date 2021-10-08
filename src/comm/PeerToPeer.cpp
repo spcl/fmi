@@ -88,6 +88,16 @@ void SMI::Comm::PeerToPeer::reduce_no_order(channel_data sendbuf, channel_data r
     }
 }
 
+void SMI::Comm::PeerToPeer::allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+    bool left_to_right = !(f.commutative && f.associative);
+    if (left_to_right) {
+        reduce(sendbuf, recvbuf, 0, f);
+        bcast(recvbuf, 0);
+    } else {
+        //reduce_no_order(sendbuf, recvbuf, root, f);
+    }
+}
+
 void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
     int rounds = floor(log2(num_peers));
     for (int i = 0; i < rounds; i ++) {
@@ -228,4 +238,6 @@ SMI::Utils::peer_num SMI::Comm::PeerToPeer::transform_peer_id(SMI::Utils::peer_n
         return (id + root) % num_peers;
     }
 }
+
+
 

@@ -20,6 +20,8 @@ namespace SMI::Comm {
 
         void reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) override;
 
+        void allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) override;
+
         void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) override;
 
         virtual void send_object(channel_data buf, Utils::peer_num peer_id) = 0;
