@@ -502,39 +502,40 @@ BOOST_AUTO_TEST_CASE(scan) {
     for (auto const & backend_data : backends) {
         auto channel_name = backend_data.first;
         auto test_params = backend_data.second;
-        constexpr int num_peers = 4;
-        std::vector<int> vals {1,2,3,4};
-        auto ch_root = SMI::Comm::Channel::get_channel(channel_name, test_params);
-        ch_root->set_peer_id(0);
-        ch_root->set_comm_name(comm_name);
-        ch_root->set_num_peers(num_peers);
-
-        std::vector<std::shared_ptr<SMI::Comm::Channel>> channels(num_peers);
-        std::vector<int> results(num_peers);
-
+        constexpr int num_peers = 32;
+        int* res = static_cast<int*>(mmap(nullptr, sizeof(int) * num_peers, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
+        }
         auto f = [] (char* a, char* b) {
             int* dest = reinterpret_cast<int*>(a);
-            *dest = ((int) *a + (int) *b);
+            *dest = *((int*) a) + *((int*) b);
         };
-    #pragma omp parallel num_threads(num_peers)
-        {
-            int tid = omp_get_thread_num();
-            auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
-            ch->set_peer_id(tid);
-            ch->set_num_peers(num_peers);
-            ch->set_comm_name(comm_name);
-            channels[tid] = ch;
-            ch->scan({reinterpret_cast<char*>(&vals[tid]), sizeof(vals[tid])},
-                     {reinterpret_cast<char*>(&results[tid]), sizeof(results[tid])}, {f, true, true});
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        int val = peer_id + 1;
+        ch->scan({reinterpret_cast<char*>(&val), sizeof(int)}, {reinterpret_cast<char*>(res + peer_id), sizeof(int)}, {f, true, true});
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            int prefix_sum = 0;
+            for (int i = 0; i < num_peers; i++) {
+                prefix_sum += (i + 1);
+                BOOST_CHECK_EQUAL(prefix_sum, res[i]);
+            }
+        } else {
+            exit(0);
         }
 
 
-        int prefix_sum = 0;
-        for (int i = 0; i < num_peers; i++) {
-            channels[i]->finalize();
-            prefix_sum += vals[i];
-            BOOST_TEST(results[i] == prefix_sum);
-        }
     }
 }
 

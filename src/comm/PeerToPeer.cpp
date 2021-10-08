@@ -89,7 +89,35 @@ void SMI::Comm::PeerToPeer::reduce_no_order(channel_data sendbuf, channel_data r
 }
 
 void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
-
+    int rounds = floor(log2(num_peers));
+    for (int i = 0; i < rounds; i ++) {
+        if ((peer_id & ((int) std::pow(2, i + 1) - 1)) == (int) std::pow(2, i + 1) - 1) {
+            Utils::peer_num src = peer_id - (int) std::pow(2, i);
+            recv(recvbuf, src);
+            f.f(sendbuf.buf, recvbuf.buf);
+        } else if ((peer_id & ((int) std::pow(2, i) - 1)) == (int) std::pow(2, i) - 1) {
+            Utils::peer_num dst = peer_id + (int) std::pow(2, i);
+            if (dst < num_peers) {
+                send(sendbuf, dst);
+                break;
+            }
+        }
+    }
+    for (int i = rounds; i > 0; i--) {
+        if ((peer_id & ((int) std::pow(2, i) - 1)) == (int) std::pow(2, i) - 1) {
+            Utils::peer_num dst = peer_id + (int) std::pow(2, i - 1);
+            if (dst < num_peers) {
+                send(sendbuf, dst);
+            }
+        } else if ((peer_id & ((int) std::pow(2, i - 1) - 1)) == (int) std::pow(2, i - 1) - 1) {
+            int src = peer_id - (int) std::pow(2, i - 1);
+            if (src > 0) {
+                recv(recvbuf, src);
+                f.f(sendbuf.buf, recvbuf.buf);
+            }
+        }
+    }
+    std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
 }
 
 void SMI::Comm::PeerToPeer::gather(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root) {
