@@ -33,6 +33,8 @@ namespace SMI::Comm {
 
         void reduce_no_order(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f);
 
+        void allreduce_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function& f);
+
     private:
         Utils::peer_num transform_peer_id(Utils::peer_num id, Utils::peer_num root, bool forward);
 

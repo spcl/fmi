@@ -94,8 +94,44 @@ void SMI::Comm::PeerToPeer::allreduce(channel_data sendbuf, channel_data recvbuf
         reduce(sendbuf, recvbuf, 0, f);
         bcast(recvbuf, 0);
     } else {
-        //reduce_no_order(sendbuf, recvbuf, root, f);
+        allreduce_no_order(sendbuf, recvbuf, f);
     }
+}
+
+void SMI::Comm::PeerToPeer::allreduce_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function &f) {
+    // Non power of two N: First receive from processes with ID >= 2^ceil(log2(N)), send result after reduction
+    int rounds = floor(log2(num_peers));
+    int nearest_power_two = (int) std::pow(2, rounds);
+    if (num_peers > nearest_power_two) {
+        if (peer_id < nearest_power_two && peer_id + nearest_power_two < num_peers) {
+            recv(recvbuf, peer_id + nearest_power_two);
+            f.f(sendbuf.buf, recvbuf.buf);
+        } else if (peer_id >= nearest_power_two) {
+            send(sendbuf, peer_id - nearest_power_two);
+        }
+    }
+    if (peer_id < nearest_power_two) {
+        // Actual recursive doubling
+        for (int i = 0; i < rounds; i++) {
+            int peer = peer_id ^ (int) std::pow(2, i);
+            if (peer < peer_id) {
+                send(sendbuf, peer);
+                recv(recvbuf, peer);
+            } else {
+                recv(recvbuf, peer);
+                send(sendbuf, peer);
+            }
+            f.f(sendbuf.buf, recvbuf.buf);
+        }
+    }
+    if (num_peers > nearest_power_two) {
+        if (peer_id < nearest_power_two && peer_id + nearest_power_two < num_peers) {
+            send(sendbuf, peer_id + nearest_power_two);
+        } else if (peer_id >= nearest_power_two) {
+            recv(sendbuf, peer_id - nearest_power_two);
+        }
+    }
+    std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
 }
 
 void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
