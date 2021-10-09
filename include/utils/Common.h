@@ -10,6 +10,20 @@ namespace SMI::Utils {
             return "Timeout was reached";
         }
     };
+
+    enum Hint {
+        fast, cheap
+    };
+
+    enum Operation {
+        send, bcast, gather, scatter, reduce, allreduce, scan
+    };
+
+    struct OperationInfo {
+        Operation op;
+        std::size_t data_size;
+    };
+
 }
 
 #endif //SMI_COMMON_H

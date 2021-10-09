@@ -2,7 +2,8 @@
 
 #include <utility>
 namespace SMI {
-    Communicator::Communicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name) {
+    Communicator::Communicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name,
+                               unsigned int faas_memory) {
         Utils::Configuration config(config_path);
         this->peer_id = peer_id;
         this->num_peers = num_peers;
@@ -10,12 +11,14 @@ namespace SMI {
         auto backends = config.get_active_channels();
         for (auto const& [backend_name, params] : backends) {
             auto backend_params = params.first;
-            auto perf_params = params.second;
+            auto model_params = params.second;
             if (backend_params.find("enabled")->second == "true") {
-                register_channel(backend_name, Comm::Channel::get_channel(backend_name, backend_params, perf_params));
+                register_channel(backend_name, Comm::Channel::get_channel(backend_name, backend_params, model_params));
             }
         }
-        set_channel_policy(std::make_shared<SMI::Utils::ChannelPolicy>(channels, num_peers));
+        double gib_second_price = config.get_faas_price();
+        double faas_price = (double) faas_memory / 1024. * gib_second_price;
+        set_channel_policy(std::make_shared<SMI::Utils::ChannelPolicy>(channels, num_peers, faas_price, hint));
     }
 
     void Communicator::register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel> c) {
@@ -34,4 +37,10 @@ namespace SMI {
     void Communicator::set_channel_policy(std::shared_ptr<SMI::Utils::ChannelPolicy> policy) {
         this->policy = std::move(policy);
     }
+
+    void Communicator::set_hint(SMI::Utils::Hint hint) {
+        this->hint = hint;
+        policy->set_hint(hint);
+    }
+
 }

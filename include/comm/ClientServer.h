@@ -36,6 +36,10 @@ namespace SMI::Comm {
 
         void finalize() override;
 
+        double get_operation_latency(Utils::OperationInfo op_info) override;
+
+        double get_operation_price(Utils::OperationInfo op_info) override;
+
     protected:
         std::map<std::string, unsigned int> num_operations = {
                 {"bcast", 0},

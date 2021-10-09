@@ -28,6 +28,10 @@ namespace SMI::Comm {
 
         virtual void recv_object(channel_data buf, Utils::peer_num peer_id) = 0;
 
+        double get_operation_latency(Utils::OperationInfo op_info) override;
+
+        double get_operation_price(Utils::OperationInfo op_info) override;
+
     protected:
         void reduce_ltr(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f);
 

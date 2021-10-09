@@ -8,7 +8,8 @@
 namespace SMI {
     class Communicator {
     public:
-        Communicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name);
+        Communicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name,
+                     unsigned int faas_memory = 128);
 
         ~Communicator();
 
@@ -21,21 +22,21 @@ namespace SMI {
 
         template<typename T>
         void recv(Comm::Data<T> &buf, SMI::Utils::peer_num src) {
-            std::string channel = policy->get_channel({ Utils::send, buf.size_in_bytes() });
+            std::string channel = policy->get_channel({Utils::send, buf.size_in_bytes()});
             channel_data data {buf.data(), buf.size_in_bytes()};
             channels[channel]->recv(data, src);
         }
 
         template<typename T>
         void bcast(Comm::Data<T> &buf, SMI::Utils::peer_num root) {
-            std::string channel = policy->get_channel({ Utils::bcast, buf.size_in_bytes() });
+            std::string channel = policy->get_channel({Utils::bcast, buf.size_in_bytes()});
             channel_data data {buf.data(), buf.size_in_bytes()};
             channels[channel]->bcast(data, root);
         }
 
         template<typename T>
         void gather(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
-            std::string channel = policy->get_channel({ Utils::gather, sendbuf.size_in_bytes() });
+            std::string channel = policy->get_channel({Utils::gather, sendbuf.size_in_bytes()});
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             channels[channel]->gather(senddata, recvdata, root);
@@ -43,7 +44,7 @@ namespace SMI {
 
         template<typename T>
         void scatter(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
-            std::string channel = policy->get_channel({ Utils::scatter, recvbuf.size_in_bytes() });
+            std::string channel = policy->get_channel({Utils::scatter, recvbuf.size_in_bytes()});
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             channels[channel]->scatter(senddata, recvdata, root);
@@ -54,7 +55,7 @@ namespace SMI {
             if (peer_id == root && sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
                 throw "Dimensions of send and receive data must match";
             }
-            std::string channel = policy->get_channel({ Utils::reduce, sendbuf.size_in_bytes() });
+            std::string channel = policy->get_channel({Utils::reduce, sendbuf.size_in_bytes()});
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             auto func = convert_to_raw_function(f, sendbuf.size_in_bytes());
@@ -71,7 +72,7 @@ namespace SMI {
             if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
                 throw "Dimensions of send and receive data must match";
             }
-            std::string channel = policy->get_channel({ Utils::allreduce, sendbuf.size_in_bytes() });
+            std::string channel = policy->get_channel({Utils::allreduce, sendbuf.size_in_bytes()});
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             auto func = convert_to_raw_function(f, sendbuf.size_in_bytes());
@@ -88,7 +89,7 @@ namespace SMI {
             if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
                 throw "Dimensions of send and receive data must match";
             }
-            std::string channel = policy->get_channel({ Utils::scan, sendbuf.size_in_bytes() });
+            std::string channel = policy->get_channel({Utils::scan, sendbuf.size_in_bytes()});
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};
             channel_data recvdata {recvbuf.data(), recvbuf.size_in_bytes()};
             auto func = convert_to_raw_function(f, sendbuf.size_in_bytes());
@@ -104,12 +105,15 @@ namespace SMI {
 
         void set_channel_policy(std::shared_ptr<SMI::Utils::ChannelPolicy> policy);
 
+        void set_hint(SMI::Utils::Hint hint);
+
     private:
         std::shared_ptr<SMI::Utils::ChannelPolicy> policy;
         std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> channels;
         SMI::Utils::peer_num peer_id;
         SMI::Utils::peer_num num_peers;
         std::string comm_name;
+        SMI::Utils::Hint hint = SMI::Utils::Hint::cheap;
 
         template <typename T>
         raw_func convert_to_raw_function(SMI::Utils::Function<T> f, std::size_t size_in_bytes) {

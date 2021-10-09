@@ -185,3 +185,11 @@ SMI::Comm::ClientServer::ClientServer(std::map<std::string, std::string> params)
     timeout = std::stoi(params["timeout"]);
     max_timeout = std::stoi(params["max_timeout"]);
 }
+
+double SMI::Comm::ClientServer::get_operation_latency(SMI::Utils::OperationInfo op_info) {
+    return 0; // TODO
+}
+
+double SMI::Comm::ClientServer::get_operation_price(SMI::Utils::OperationInfo op_info) {
+    return 0; // TODO
+}

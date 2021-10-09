@@ -14,6 +14,8 @@ namespace SMI::Utils {
 
         std::map< std::string, std::pair< std::map<std::string, std::string>, std::map<std::string, std::string> > > get_active_channels();
 
+        double get_faas_price();
+
     private:
         boost::property_tree::ptree root;
     };

@@ -8,7 +8,7 @@
 
 char TAG[] = "S3Client";
 
-SMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params) : ClientServer(params) {
+SMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) : ClientServer(params) {
     if (instances == 0) {
         // Only one call allowed (https://github.com/aws/aws-sdk-cpp/issues/456), give possible multiple clients control over initialization
         Aws::InitAPI(options);
@@ -17,6 +17,11 @@ SMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::strin
     bucket_name = params["bucket_name"];
     Aws::Client::ClientConfiguration config;
     config.region = params["s3_region"];
+    bandwidth = std::stod(model_params["bandwidth"]);
+    overhead = std::stod(model_params["overhead"]);
+    transfer_price = std::stod(model_params["transfer_price"]);
+    download_price = std::stod(model_params["download_price"]);
+    upload_price = std::stod(model_params["upload_price"]);
 
     auto credentialsProvider = Aws::MakeShared<Aws::Auth::EnvironmentAWSCredentialsProvider>(TAG);
     client = Aws::MakeUnique<Aws::S3::S3Client>(TAG, credentialsProvider, config);
@@ -80,11 +85,19 @@ std::vector<std::string> SMI::Comm::S3::get_object_names() {
     return object_names;
 }
 
-double SMI::Comm::S3::get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) {
-    return 0.0;
+double SMI::Comm::S3::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+    double fixed_overhead = overhead;
+    double waiting_time = (double) timeout / 2.;
+    double comm_overhead = fixed_overhead + waiting_time;
+    double agg_bandwidth = producer * consumer * bandwidth;
+    double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
+    return comm_overhead + trans_time;
 }
 
-double SMI::Comm::S3::get_overhead() {
-    return 0.0;
+double SMI::Comm::S3::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+    double upload_costs = producer * upload_price + producer * ((double) size_in_bytes / 1000000000.) * transfer_price;
+    double expected_polls = (max_timeout / timeout) / 2;
+    double download_costs = producer * consumer * expected_polls * download_price + producer * consumer * ((double) size_in_bytes / 1000000000.) * transfer_price;
+    return upload_costs + download_costs;
 }
 

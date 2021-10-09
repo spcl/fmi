@@ -11,7 +11,7 @@
 namespace SMI::Comm {
     class S3 : public ClientServer {
     public:
-        explicit S3(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params);
+        explicit S3(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params);
 
         ~S3();
 
@@ -23,15 +23,21 @@ namespace SMI::Comm {
 
         std::vector<std::string> get_object_names() override;
 
-        double get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) override;
+        double get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) override;
 
-        double get_overhead() override;
+        double get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) override;
 
     private:
         std::string bucket_name;
         std::unique_ptr<Aws::S3::S3Client, Aws::Deleter<Aws::S3::S3Client>> client;
         Aws::SDKOptions options;
         inline static int instances = 0;
+        // Model params
+        double bandwidth;
+        double overhead;
+        double transfer_price;
+        double download_price;
+        double upload_price;
 
     };
 }

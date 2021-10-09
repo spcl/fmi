@@ -270,5 +270,13 @@ SMI::Utils::peer_num SMI::Comm::PeerToPeer::transform_peer_id(SMI::Utils::peer_n
     }
 }
 
+double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op_info) {
+    return 0; // TODO
+}
+
+double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_info) {
+    return 0; // TODO
+}
+
 
 

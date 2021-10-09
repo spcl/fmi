@@ -10,7 +10,7 @@ namespace SMI::Comm {
 
     class Redis : public ClientServer {
     public:
-        explicit Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params);
+        explicit Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params);
 
         ~Redis();
 
@@ -22,12 +22,20 @@ namespace SMI::Comm {
 
         std::vector<std::string> get_object_names() override;
 
-        double get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) override;
+        double get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) override;
 
-        double get_overhead() override;
+        double get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) override;
 
     private:
         redisContext* context;
+        // Model params
+        double bandwidth_single;
+        double bandwidth_multiple;
+        double overhead;
+        double transfer_price;
+        double instance_price;
+        unsigned int requests_per_hour;
+        bool include_infrastructure_costs;
 
     };
 }

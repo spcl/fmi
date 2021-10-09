@@ -9,8 +9,67 @@
 #include <iostream>
 #include <omp.h>
 
+std::map<std::string, std::string> s3_test_params = {
+        {"bucket_name", "romanboe-uploadtest"},
+        {"s3_region", "eu-central-1"},
+        {"timeout", "100"},
+        {"max_timeout", "1000"}
+};
+
+std::map<std::string, std::string> s3_test_model_params = {
+        {"bandwidth", "50.0"},
+        {"overhead", "40.4"},
+        {"transfer_price", "0.0"},
+        {"download_price", "0.00000043"},
+        {"upload_price", "0.0000054"}
+};
+
+std::map<std::string, std::string> redis_test_params = {
+        {"host", "127.0.0.1"},
+        {"port", "6379"},
+        {"timeout", "1"},
+        {"max_timeout", "1000"}
+};
+
+std::map<std::string, std::string> redis_test_model_params = {
+        {"bandwidth_single", "100.0"},
+        {"bandwidth_multiple", "400.0"},
+        {"overhead", "5.2"},
+        {"transfer_price", "0.0"},
+        {"instance_price", "0.0038"},
+        {"requests_per_hour", "1000"},
+        {"include_infrastructure_costs", "true"}
+};
+
+std::map<std::string, std::string> direct_test_params = {
+        {"host", "192.168.0.166"},
+        {"port", "10000"},
+        {"max_timeout", "1000"}
+};
+
+std::map<std::string, std::string> direct_test_model_params = {
+        {"bandwidth", "250.0"},
+        {"overhead", "0.34"},
+        {"transfer_price", "0.0"},
+        {"vm_price", "0.0134"},
+        {"requests_per_hour", "1000"},
+        {"include_infrastructure_costs", "true"}
+};
+
 int main() {
-    //SMI::Communicator comm(0, 1, "../config/SMI.json");
+    auto ch_s3 = SMI::Comm::Channel::get_channel("S3", s3_test_params, s3_test_model_params);
+    std::cout << ch_s3->get_price(1, 1, 1) << std::endl;
+    std::cout << ch_s3->get_latency(1, 1, 1) << std::endl;
+
+    auto ch_redis = SMI::Comm::Channel::get_channel("Redis", redis_test_params, redis_test_model_params);
+    std::cout << ch_redis->get_price(1, 1, 1) << std::endl;
+    std::cout << ch_redis->get_latency(1, 1, 1) << std::endl;
+
+    auto ch_direct = SMI::Comm::Channel::get_channel("Direct", direct_test_params, direct_test_model_params);
+    std::cout << ch_direct->get_price(1, 1, 1) << std::endl;
+    std::cout << ch_direct->get_latency(1, 1, 1) << std::endl;
+
+    exit(0);
 
     SMI::Comm::Data<int> d = 1;
     //std::cout << d << std::endl;
@@ -19,30 +78,5 @@ int main() {
     char rcv[5];
     data[0] = '1';
     SMI::Comm::Data<void*> d2(data, 5);
-
-    std::map<std::string, std::string> direct_test_params = {
-            {"host", "127.0.0.1"},
-            {"port", "10000"}
-    };
-
-    #pragma omp parallel num_threads(2)
-    {
-        int tid = omp_get_thread_num();
-        SMI::Comm::Direct comm(direct_test_params);
-        comm.set_num_peers(2);
-        comm.set_peer_id(tid);
-        if (tid == 0)
-            comm.send_object({data, sizeof(data)}, 1);
-        if (tid == 1)
-            comm.recv_object({rcv, sizeof(rcv)}, 0);
-    }
-    std::cout << rcv[0] << std::endl;
-
-
-
-    //comm.send(d, 0);
-    //SMI::Comm::Data<int> ret;
-    //s3.download(ret, std::string("test"));
-    //std::cout << ret << std::endl;
 
 }

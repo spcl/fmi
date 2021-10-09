@@ -4,13 +4,13 @@
 #include "../../include/comm/Direct.h"
 
 std::shared_ptr<SMI::Comm::Channel> SMI::Comm::Channel::get_channel(std::string name, std::map<std::string, std::string> params,
-                                                                    std::map<std::string, std::string> perf_params) {
+                                                                    std::map<std::string, std::string> model_params) {
     if (name == "S3") {
-        return std::make_shared<S3>(params, perf_params);
+        return std::make_shared<S3>(params, model_params);
     } else if (name == "Redis") {
-        return std::make_shared<Redis>(params, perf_params);
+        return std::make_shared<Redis>(params, model_params);
     } else if (name == "Direct") {
-        return std::make_shared<Direct>(params, perf_params);
+        return std::make_shared<Direct>(params, model_params);
     } else {
         throw "Unknown channel name passed";
     }
