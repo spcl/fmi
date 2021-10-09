@@ -8,7 +8,7 @@
 
 char TAG[] = "S3Client";
 
-SMI::Comm::S3::S3(std::map<std::string, std::string> params) : ClientServer(params) {
+SMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params) : ClientServer(params) {
     if (instances == 0) {
         // Only one call allowed (https://github.com/aws/aws-sdk-cpp/issues/456), give possible multiple clients control over initialization
         Aws::InitAPI(options);
@@ -78,5 +78,13 @@ std::vector<std::string> SMI::Comm::S3::get_object_names() {
         BOOST_LOG_TRIVIAL(error) << "Error when listing objects from S3: " << outcome.GetError();
     }
     return object_names;
+}
+
+double SMI::Comm::S3::get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) {
+    return 0.0;
+}
+
+double SMI::Comm::S3::get_overhead() {
+    return 0.0;
 }
 

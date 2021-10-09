@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <map>
 #include <string>
+#include "../comm/Channel.h"
 
 namespace SMI::Utils {
     enum Operation {
@@ -17,12 +18,12 @@ namespace SMI::Utils {
 
     class ChannelPolicy {
     public:
-        ChannelPolicy(std::map<std::string, std::map<std::string, std::string>> channels, std::map<std::string, std::string> perf_params, peer_num num_peers);
+        ChannelPolicy(std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> &channels, peer_num num_peers);
 
         std::string get_channel(OperationInfo op_info);
 
     private:
-        std::map<std::string, std::map<std::string, std::string>> channels;
+        std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> &channels;
         peer_num num_peers;
     };
 }

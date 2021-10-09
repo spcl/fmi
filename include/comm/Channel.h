@@ -52,7 +52,11 @@ namespace SMI::Comm {
 
         virtual void finalize() {};
 
-        static std::shared_ptr<Channel> get_channel(std::string name, std::map<std::string, std::string> params);
+        static std::shared_ptr<Channel> get_channel(std::string name, std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params);
+
+        virtual double get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) = 0;
+
+        virtual double get_overhead() = 0;
 
     protected:
         SMI::Utils::peer_num peer_id;

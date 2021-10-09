@@ -11,7 +11,7 @@
 namespace SMI::Comm {
     class S3 : public ClientServer {
     public:
-        explicit S3(std::map<std::string, std::string> params);
+        explicit S3(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params);
 
         ~S3();
 
@@ -22,6 +22,10 @@ namespace SMI::Comm {
         void delete_object(std::string name) override;
 
         std::vector<std::string> get_object_names() override;
+
+        double get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) override;
+
+        double get_overhead() override;
 
     private:
         std::string bucket_name;

@@ -8,13 +8,14 @@ namespace SMI {
         this->num_peers = num_peers;
         this->comm_name = comm_name;
         auto backends = config.get_active_channels();
-        for (auto const& [backend_name, backend_params] : backends) {
+        for (auto const& [backend_name, params] : backends) {
+            auto backend_params = params.first;
+            auto perf_params = params.second;
             if (backend_params.find("enabled")->second == "true") {
-                register_channel(backend_name, Comm::Channel::get_channel(backend_name, backend_params));
+                register_channel(backend_name, Comm::Channel::get_channel(backend_name, backend_params, perf_params));
             }
         }
-        std::map<std::string, std::string> perf_params;
-        set_channel_policy(std::make_shared<SMI::Utils::ChannelPolicy>(backends, perf_params, num_peers));
+        set_channel_policy(std::make_shared<SMI::Utils::ChannelPolicy>(channels, num_peers));
     }
 
     void Communicator::register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel> c) {

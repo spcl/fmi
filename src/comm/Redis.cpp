@@ -1,7 +1,7 @@
 #include "../../include/comm/Redis.h"
 #include <boost/log/trivial.hpp>
 
-SMI::Comm::Redis::Redis(std::map<std::string, std::string> params) : ClientServer(params) {
+SMI::Comm::Redis::Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params) : ClientServer(params) {
     std::string hostname = params["host"];
     auto port = std::stoi(params["port"]);
     context = redisConnect(hostname.c_str(), port);
@@ -54,4 +54,12 @@ std::vector<std::string> SMI::Comm::Redis::get_object_names() {
         keys.emplace_back(reply->element[i]->str);
     }
     return keys;
+}
+
+double SMI::Comm::Redis::get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) {
+    return 0.0;
+}
+
+double SMI::Comm::Redis::get_overhead() {
+    return 0.0;
 }

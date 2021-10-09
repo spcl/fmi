@@ -10,7 +10,7 @@ namespace SMI::Comm {
 
     class Redis : public ClientServer {
     public:
-        explicit Redis(std::map<std::string, std::string> params);
+        explicit Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params);
 
         ~Redis();
 
@@ -21,6 +21,10 @@ namespace SMI::Comm {
         void delete_object(std::string name) override;
 
         std::vector<std::string> get_object_names() override;
+
+        double get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) override;
+
+        double get_overhead() override;
 
     private:
         redisContext* context;

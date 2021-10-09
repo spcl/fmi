@@ -4,7 +4,7 @@
 #include <boost/log/trivial.hpp>
 #include <thread>
 
-SMI::Comm::Direct::Direct(std::map<std::string, std::string> params) {
+SMI::Comm::Direct::Direct(std::map<std::string, std::string> params, std::map<std::string, std::string> perf_params) {
     hostname = params["host"];
     port = std::stoi(params["port"]);
     max_timeout = std::stoi(params["max_timeout"]);
@@ -49,5 +49,13 @@ void SMI::Comm::Direct::check_socket(SMI::Utils::peer_num partner_id, std::strin
         setsockopt(sockets[partner_id], SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof timeout);
         setsockopt(sockets[partner_id], SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof timeout);
     }
+}
+
+double SMI::Comm::Direct::get_bandwidth(SMI::Utils::peer_num producers, SMI::Utils::peer_num consumers) {
+    return 0.0;
+}
+
+double SMI::Comm::Direct::get_overhead() {
+    return 0.0;
 }
 

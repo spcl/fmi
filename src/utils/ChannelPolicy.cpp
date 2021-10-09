@@ -1,13 +1,10 @@
 #include "../../include/utils/ChannelPolicy.h"
+#include "../../include/comm/Channel.h"
 
 #include <utility>
 
-SMI::Utils::ChannelPolicy::ChannelPolicy(std::map<std::string, std::map<std::string, std::string>> channels,
-                                         std::map<std::string, std::string> perf_params,
-                                         peer_num num_peers) {
-    this->channels = std::move(channels);
-    this->num_peers = num_peers;
-}
+SMI::Utils::ChannelPolicy::ChannelPolicy(std::map<std::string, std::shared_ptr<SMI::Comm::Channel>> &channels,
+                                         peer_num num_peers) : channels(channels), num_peers(num_peers) {}
 
 std::string SMI::Utils::ChannelPolicy::get_channel(OperationInfo op_info) {
     for (const auto& [channel_name, _] : channels) {
