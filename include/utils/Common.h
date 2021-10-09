@@ -16,12 +16,13 @@ namespace SMI::Utils {
     };
 
     enum Operation {
-        send, bcast, gather, scatter, reduce, allreduce, scan
+        send, bcast, barrier, gather, scatter, reduce, allreduce, scan
     };
 
     struct OperationInfo {
         Operation op;
         std::size_t data_size;
+        bool left_to_right = false;
     };
 
 }

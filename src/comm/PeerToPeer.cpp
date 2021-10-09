@@ -271,11 +271,105 @@ SMI::Utils::peer_num SMI::Comm::PeerToPeer::transform_peer_id(SMI::Utils::peer_n
 }
 
 double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op_info) {
-    return 0; // TODO
+    std::size_t size_in_bytes = op_info.data_size;
+    switch (op_info.op) {
+        case Utils::send:
+            return get_latency(1, 1, size_in_bytes);
+        case Utils::bcast:
+            return ceil(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+        case Utils::reduce:
+            if (!op_info.left_to_right) {
+                return ceil(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+            } // else, gather used
+        case Utils::gather:
+        case Utils::scatter:
+        {
+            // ceil(log2(num_peers)) rounds, doubling buffer size in each round
+            double latency = 0.;
+            for (int i = 1; i <= ceil(log2(num_peers)); i++) {
+                // Overapproximation for non power of two (too large file sizes)
+                latency += get_latency(1, 1, i * size_in_bytes);
+            }
+            return latency;
+        }
+        case Utils::barrier:
+            size_in_bytes = 1;
+        case Utils::allreduce:
+            if (op_info.left_to_right) {
+                // Reduce with gather, followed by bcast
+                double latency = 0.;
+                for (int i = 1; i <= ceil(log2(num_peers)); i++) {
+                    latency += get_latency(1, 1, i * size_in_bytes);
+                }
+                latency += ceil(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+                return latency;
+            } else {
+                // Send and recv in every round
+                double latency = 2 * floor(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+                if (floor(log2(num_peers)) != num_peers) {
+                    // 2 additional rounds in beginning / end
+                    latency += 2 * get_latency(1, 1, size_in_bytes);
+                }
+                return latency;
+            }
+        case Utils::scan:
+            return 2 * floor(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+    }
+
 }
 
 double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_info) {
-    return 0; // TODO
+    std::size_t size_in_bytes = op_info.data_size;
+    switch (op_info.op) {
+        case Utils::send:
+            return get_price(1, 1, size_in_bytes);
+        case Utils::bcast:
+        {
+            // Number of comm. doubles in every round, for non-power-of two one additional message per node
+            double power_of_two = std::pow(2, floor(log2(num_peers)));
+            double comm_rounds = power_of_two - 1 + (num_peers - power_of_two);
+            return comm_rounds * get_price(1, 1, size_in_bytes);
+        }
+        case Utils::reduce:
+            if (!op_info.left_to_right) {
+                double power_of_two = std::pow(2, floor(log2(num_peers)));
+                double comm_rounds = power_of_two - 1 + (num_peers - power_of_two);
+                return comm_rounds * get_price(1, 1, size_in_bytes);
+            } // else, gather used
+        case Utils::gather:
+        case Utils::scatter:
+        {
+            double costs = 0.;
+            for (int i = 1; i <= ceil(log2(num_peers)); i++) {
+                // Overapproximation for non power of two (too large file sizes, too many comm.)
+                costs += std::pow(2, floor(log2(num_peers)) - i) * get_price(1, 1, i * size_in_bytes);
+            }
+            return costs;
+        }
+        case Utils::barrier:
+        size_in_bytes = 1;
+        case Utils::allreduce:
+        if (op_info.left_to_right) {
+            // Reduce with gather, followed by bcast
+            double costs = 0.;
+            for (int i = 1; i <= ceil(log2(num_peers)); i++) {
+                // Overapproximation for non power of two
+                costs += std::pow(2, floor(log2(num_peers)) - i) * get_price(1, 1, i * size_in_bytes);
+            }
+            double power_of_two = std::pow(2, floor(log2(num_peers)));
+            double comm_rounds = power_of_two - 1 + (num_peers - power_of_two);
+            costs += comm_rounds * get_price(1, 1, size_in_bytes);
+            return costs;
+        } else {
+            // Send and recv in every round
+            double power_of_two = std::pow(2, floor(log2(num_peers)));
+            double comm_rounds = 2 * (power_of_two - 1) + 2 * (num_peers - power_of_two);
+            return comm_rounds * get_price(1, 1, size_in_bytes);
+        }
+        case Utils::scan:
+            // Bounded by 2 * num_peers: https://link.springer.com/content/pdf/10.1007%2F11846802.pdf
+            return 2 * num_peers * get_price(1, 1, size_in_bytes);
+    }
 }
 
 

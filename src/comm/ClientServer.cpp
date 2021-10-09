@@ -1,6 +1,7 @@
 #include "../../include/comm/ClientServer.h"
 #include <thread>
 #include <cstring>
+#include <cmath>
 
 void SMI::Comm::ClientServer::send(channel_data buf, SMI::Utils::peer_num dest) {
     auto num_operation_entry = num_operations.find("send" + std::to_string(dest));
@@ -187,9 +188,63 @@ SMI::Comm::ClientServer::ClientServer(std::map<std::string, std::string> params)
 }
 
 double SMI::Comm::ClientServer::get_operation_latency(SMI::Utils::OperationInfo op_info) {
-    return 0; // TODO
+    std::size_t size_in_bytes = op_info.data_size;
+    switch (op_info.op) {
+        case Utils::send:
+            return get_latency(1, 1, size_in_bytes);
+        case Utils::bcast:
+            return get_latency(1, num_peers - 1, size_in_bytes);
+        case Utils::barrier:
+        {
+            double upload = get_latency(num_peers, 1, 1);
+            double download = get_latency(1, num_peers, 1); // LIST used, modeled as download from one
+            return upload + download;
+        }
+        case Utils::gather:
+            return get_latency(num_peers - 1, 1, size_in_bytes);
+        case Utils::scatter:
+            return get_latency(1, num_peers - 1, size_in_bytes);
+        case Utils::reduce:
+            return get_latency(num_peers - 1, 1, size_in_bytes);
+        case Utils::allreduce:
+        {
+            double reduction = get_latency(num_peers - 1, 1, size_in_bytes);
+            double bcast = get_latency(1, num_peers - 1, size_in_bytes);
+            return reduction + bcast;
+        }
+        case Utils::scan:
+            // Pattern is parallel (num_peers - 1, 1), (num_peers - 2, 1), ... -> Slowest one is (num_peers - 1, 1)
+            return get_latency(num_peers - 1, 1, size_in_bytes);
+    }
 }
 
 double SMI::Comm::ClientServer::get_operation_price(SMI::Utils::OperationInfo op_info) {
-    return 0; // TODO
+    std::size_t size_in_bytes = op_info.data_size;
+    switch (op_info.op) {
+        case Utils::send:
+            return get_price(1, 1, size_in_bytes);
+        case Utils::bcast:
+            return get_price(1, num_peers - 1, size_in_bytes);
+        case Utils::barrier:
+        {
+            double upload = get_price(num_peers, 1, 1);
+            double download = get_price(1, num_peers, 1);
+            return upload + download;
+        }
+        case Utils::gather:
+            return get_price(num_peers - 1, 1, size_in_bytes);
+        case Utils::scatter:
+            return get_price(1, num_peers - 1, size_in_bytes);
+        case Utils::reduce:
+            return get_price(num_peers - 1, 1, size_in_bytes);
+        case Utils::allreduce:
+        {
+            double reduction = get_price(num_peers - 1, 1, size_in_bytes);
+            double bcast = get_price(1, num_peers - 1, size_in_bytes);
+            return reduction + bcast;
+        }
+        case Utils::scan:
+            // N - 1 uploads, each is consumed on avg. by (N - 1) / 2 consumers
+            return (num_peers - 1) * get_latency(1, ceil((double) (num_peers - 1) / 2.), size_in_bytes);
+    }
 }
