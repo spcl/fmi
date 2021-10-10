@@ -4,6 +4,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+get_directory_property(hasParent PARENT_DIRECTORY)
+if (hasParent)
+    set(SMI_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/include/" PARENT_SCOPE)
+endif()
+
 find_package(Boost COMPONENTS log REQUIRED)
 find_package(AWSSDK COMPONENTS s3 REQUIRED)
 find_package(hiredis REQUIRED)
@@ -17,10 +22,12 @@ target_include_directories(SMI PRIVATE ${Boost_INCLUDE_DIRS} ${TCPUNCH_INCLUDE_D
 
 target_link_libraries(SMI ${Boost_Libraries} Boost::log ${AWSSDK_LINK_LIBRARIES} ${HIREDIS_LIBRARIES} tcpunch)
 
-find_package(OpenMP REQUIRED)
+if (NOT hasParent)
+    find_package(OpenMP REQUIRED)
 
-add_executable(client tests/client.cpp)
+    add_executable(client tests/client.cpp)
 
-target_link_libraries(client SMI OpenMP::OpenMP_CXX)
+    target_link_libraries(client SMI OpenMP::OpenMP_CXX)
 
-add_subdirectory(tests)
+    add_subdirectory(tests)
+endif()
