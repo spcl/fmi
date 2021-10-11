@@ -213,3 +213,24 @@ SMI::Utils::PythonCommunicator::allreduce(const boost::python::object& src_data,
         throw "Reductions currently only supported with atomic types";
     }
 }
+
+boost::python::object
+SMI::Utils::PythonCommunicator::scan(const boost::python::object& src_data, SMI::Utils::PythonFunc f, SMI::Utils::PythonData type) {
+    if (type.type == INT) {
+        auto val = extract_object<int>(src_data);
+        SMI::Comm::Data<int> sendbuf(val);
+        SMI::Comm::Data<int> recvbuf;
+        auto func = get_function<int>(f);
+        comm->scan(sendbuf, recvbuf, func);
+        return boost::python::object(recvbuf.get());
+    } else if (type.type == DOUBLE) {
+        auto val = extract_object<double>(src_data);
+        SMI::Comm::Data<double> sendbuf(val);
+        SMI::Comm::Data<double> recvbuf;
+        auto func = get_function<double>(f);
+        comm->scan(sendbuf, recvbuf, func);
+        return boost::python::object(recvbuf.get());
+    } else {
+        throw "Reductions currently only supported with atomic types";
+    }
+}

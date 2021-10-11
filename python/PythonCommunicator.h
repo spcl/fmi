@@ -63,6 +63,8 @@ namespace SMI::Utils {
 
         boost::python::object allreduce(const boost::python::object& src_data, SMI::Utils::PythonFunc f, SMI::Utils::PythonData type);
 
+        boost::python::object scan(const boost::python::object& src_data, SMI::Utils::PythonFunc f, SMI::Utils::PythonData type);
+
     private:
         std::shared_ptr<SMI::Communicator> comm;
         SMI::Utils::peer_num peer_id;
