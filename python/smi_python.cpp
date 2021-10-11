@@ -16,6 +16,8 @@ BOOST_PYTHON_MODULE(smi)
         .def("recv", &SMI::Utils::PythonCommunicator::recv)
         .def("bcast", &SMI::Utils::PythonCommunicator::bcast)
         .def("barrier", &SMI::Utils::PythonCommunicator::barrier)
+        .def("gather", &SMI::Utils::PythonCommunicator::gather)
+        .def("scatter", &SMI::Utils::PythonCommunicator::scatter)
     ;
 
     enum_<SMI::Utils::PythonType>("datatypes")

@@ -35,13 +35,18 @@ namespace SMI::Utils {
 
         boost::python::object recv(SMI::Utils::peer_num src, SMI::Utils::PythonData type);
 
-        boost::python::object bcast(const boost::python::object& py_obj, SMI::Utils::peer_num root, SMI::Utils::PythonData type);
+        boost::python::object bcast(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData type);
 
         void barrier();
+
+        boost::python::object gather(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type);
+
+        boost::python::object scatter(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type);
 
     private:
         std::shared_ptr<SMI::Communicator> comm;
         SMI::Utils::peer_num peer_id;
+        SMI::Utils::peer_num num_peers;
 
         template<typename T> T extract_object(const boost::python::object &py_obj) {
             T val;

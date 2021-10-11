@@ -7,6 +7,7 @@ SMI::Utils::PythonCommunicator::PythonCommunicator(SMI::Utils::peer_num peer_id,
                                                    std::string comm_name, unsigned int faas_memory) {
     comm = std::make_shared<SMI::Communicator>(peer_id, num_peers, config_path, comm_name, faas_memory);
     this->peer_id = peer_id;
+    this->num_peers = num_peers;
 }
 
 void SMI::Utils::PythonCommunicator::send(const boost::python::object& py_obj, SMI::Utils::peer_num dst, SMI::Utils::PythonData type) {
@@ -57,11 +58,11 @@ boost::python::object SMI::Utils::PythonCommunicator::recv(SMI::Utils::peer_num 
     }
 }
 
-boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python::object& py_obj, SMI::Utils::peer_num root, SMI::Utils::PythonData type) {
+boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData type) {
     if (type.type == INT) {
         SMI::Comm::Data<int> data;
         if (peer_id == root) {
-            auto val = extract_object<int>(py_obj);
+            auto val = extract_object<int>(src_data);
             data = val;
         }
         comm->bcast<int>(data, root);
@@ -69,7 +70,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
     } else if (type.type == DOUBLE) {
         SMI::Comm::Data<double> data;
         if (peer_id == root) {
-            auto val = extract_object<double>(py_obj);
+            auto val = extract_object<double>(src_data);
             data = val;
         }
         comm->bcast<double>(data, root);
@@ -77,7 +78,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
     } else if (type.type == INT_LIST) {
         SMI::Comm::Data<std::vector<int>> data(type.num_objects);
         if (peer_id == root) {
-            auto val = extract_list<int>(py_obj);
+            auto val = extract_list<int>(src_data);
             data = val;
         }
         comm->bcast<std::vector<int>>(data, root);
@@ -85,7 +86,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
     } else if (type.type == DOUBLE_LIST) {
         SMI::Comm::Data<std::vector<double>> data(type.num_objects);
         if (peer_id == root) {
-            auto val = extract_list<double>(py_obj);
+            auto val = extract_list<double>(src_data);
             data = val;
         }
         comm->bcast<std::vector<double>>(data, root);
@@ -97,4 +98,73 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
 
 void SMI::Utils::PythonCommunicator::barrier() {
     comm->barrier();
+}
+
+boost::python::object
+SMI::Utils::PythonCommunicator::gather(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type) {
+    if (snd_type.type == INT || snd_type.type == INT_LIST) {
+        std::vector<int> val_list;
+        if (snd_type.type == INT) {
+            auto val = extract_object<int>(src_data);
+            snd_type.num_objects = 1;
+            val_list.emplace_back(val);
+        } else if (snd_type.type == INT_LIST) {
+            val_list = extract_list<int>(src_data);
+        }
+        SMI::Comm::Data<std::vector<int>> senddata(val_list);
+        SMI::Comm::Data<std::vector<int>> rcvdata;
+        if (peer_id == root) {
+            rcvdata = SMI::Comm::Data<std::vector<int>>(snd_type.num_objects * num_peers);
+        }
+        comm->gather<std::vector<int>>(senddata, rcvdata, root);
+        return boost::python::object(to_list<int>(rcvdata.get()));
+    } else if (snd_type.type == DOUBLE || snd_type.type == DOUBLE_LIST) {
+        std::vector<double> val_list;
+        if (snd_type.type == DOUBLE) {
+            auto val = extract_object<double>(src_data);
+            snd_type.num_objects = 1;
+            val_list.emplace_back(val);
+        } else if (snd_type.type == DOUBLE_LIST) {
+            val_list = extract_list<double>(src_data);
+        }
+        SMI::Comm::Data<std::vector<double>> senddata(val_list);
+        SMI::Comm::Data<std::vector<double>> rcvdata;
+        if (peer_id == root) {
+            rcvdata = SMI::Comm::Data<std::vector<double>>(snd_type.num_objects * num_peers);
+        }
+        comm->gather<std::vector<double>>(senddata, rcvdata, root);
+        return boost::python::object(to_list<double>(rcvdata.get()));
+    } else {
+        throw "Unknown type passed";
+    }
+}
+
+boost::python::object
+SMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type) {
+    if (snd_type.num_objects % num_peers != 0) {
+        throw "List length not divisible by number of peers";
+    }
+    if (snd_type.type == INT || snd_type.type == DOUBLE) {
+        throw "Cannot scatter atomic types";
+    } else if (snd_type.type == INT_LIST) {
+        SMI::Comm::Data<std::vector<int>> recvdata(snd_type.num_objects / num_peers);
+        SMI::Comm::Data<std::vector<int>> senddata;
+        if (peer_id == root) {
+            auto val = extract_list<int>(src_data);
+            senddata = val;
+        }
+        comm->scatter<std::vector<int>>(senddata, recvdata, root);
+        return boost::python::object(to_list<int>(recvdata.get()));
+    } else if (snd_type.type == DOUBLE_LIST) {
+        SMI::Comm::Data<std::vector<double>> recvdata(snd_type.num_objects / num_peers);
+        SMI::Comm::Data<std::vector<double>> senddata;
+        if (peer_id == root) {
+            auto val = extract_list<double>(src_data);
+            senddata = val;
+        }
+        comm->scatter<std::vector<double>>(senddata, recvdata, root);
+        return boost::python::object(to_list<double>(recvdata.get()));
+    } else {
+        throw "Unknown type passed";
+    }
 }
