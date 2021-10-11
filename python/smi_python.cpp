@@ -14,6 +14,7 @@ BOOST_PYTHON_MODULE(smi)
     class_<SMI::Utils::PythonCommunicator>("Communicator", init<SMI::Utils::peer_num, SMI::Utils::peer_num, std::string, std::string, optional<unsigned int> >())
         .def("send", &SMI::Utils::PythonCommunicator::send)
         .def("recv", &SMI::Utils::PythonCommunicator::recv)
+        .def("bcast", &SMI::Utils::PythonCommunicator::bcast)
     ;
 
     enum_<SMI::Utils::PythonType>("datatypes")
