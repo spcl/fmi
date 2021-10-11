@@ -37,6 +37,8 @@ namespace SMI::Utils {
 
         boost::python::object bcast(const boost::python::object& py_obj, SMI::Utils::peer_num root, SMI::Utils::PythonData type);
 
+        void barrier();
+
     private:
         std::shared_ptr<SMI::Communicator> comm;
         SMI::Utils::peer_num peer_id;

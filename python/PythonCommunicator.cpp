@@ -94,3 +94,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
         throw "Unknown type passed";
     }
 }
+
+void SMI::Utils::PythonCommunicator::barrier() {
+    comm->barrier();
+}
