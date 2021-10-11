@@ -168,3 +168,38 @@ SMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, S
         throw "Unknown type passed";
     }
 }
+
+boost::python::object
+SMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonFunc f,
+                                       SMI::Utils::PythonData type) {
+    if (type.type == INT) {
+        auto val = extract_object<int>(src_data);
+        SMI::Comm::Data<int> sendbuf(val);
+        SMI::Comm::Data<int> recvbuf;
+        SMI::Utils::Function<int> func([] (int a, int b) {return a + b;}, true, true);
+        if (f.op == PROD) {
+            func = SMI::Utils::Function<int>([] (int a, int b) {return a * b;}, true, true);
+        } else if (f.op == MAX) {
+            func = SMI::Utils::Function<int>([] (int a, int b) {return std::max(a, b);}, true, true);
+        } else if (f.op == MIN) {
+            func = SMI::Utils::Function<int>([] (int a, int b) {return std::min(a, b);}, true, true);
+        }
+        comm->reduce(sendbuf, recvbuf, root, func);
+        return boost::python::object(recvbuf.get());
+    } else if (type.type == DOUBLE) {
+        auto val = extract_object<double>(src_data);
+        SMI::Comm::Data<double> sendbuf(val);
+        SMI::Comm::Data<double> recvbuf;
+        SMI::Utils::Function<double> func([] (double a, double b) {return a + b;}, true, true);
+        if (f.op == PROD) {
+            func = SMI::Utils::Function<double>([] (double a, double b) {return a * b;}, true, true);
+        } else if (f.op == MAX) {
+            func = SMI::Utils::Function<double>([] (double a, double b) {return std::max(a, b);}, true, true);
+        } else if (f.op == MIN) {
+            func = SMI::Utils::Function<double>([] (double a, double b) {return std::min(a, b);}, true, true);
+        }
+        comm->reduce(sendbuf, recvbuf, root, func);
+        return boost::python::object(recvbuf.get());
+    }
+
+}

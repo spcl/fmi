@@ -10,11 +10,24 @@
 
 namespace SMI::Utils {
 
+    enum PythonOp {
+        SUM, PROD, MAX, MIN, CUSTOM
+    };
+
     enum PythonType {
         INT,
         DOUBLE,
         INT_LIST,
         DOUBLE_LIST
+    };
+
+    class PythonFunc {
+    public:
+        PythonFunc(PythonOp op) : op(op) {}
+        PythonFunc(PythonOp op, const boost::python::object& func) : op(op), func(func) {}
+
+        PythonOp op;
+        boost::python::object func;
     };
 
     class PythonData {
@@ -42,6 +55,9 @@ namespace SMI::Utils {
         boost::python::object gather(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type);
 
         boost::python::object scatter(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type);
+
+        boost::python::object reduce(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonFunc f,
+                                     SMI::Utils::PythonData type);
 
     private:
         std::shared_ptr<SMI::Communicator> comm;

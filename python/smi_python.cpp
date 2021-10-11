@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(smi)
         .def("barrier", &SMI::Utils::PythonCommunicator::barrier)
         .def("gather", &SMI::Utils::PythonCommunicator::gather)
         .def("scatter", &SMI::Utils::PythonCommunicator::scatter)
+        .def("reduce", &SMI::Utils::PythonCommunicator::reduce)
     ;
 
     enum_<SMI::Utils::PythonType>("datatypes")
@@ -29,6 +30,18 @@ BOOST_PYTHON_MODULE(smi)
 
     class_<SMI::Utils::PythonData>("types", init<SMI::Utils::PythonType>())
         .def(init<SMI::Utils::PythonType, unsigned int>())
+    ;
+
+    enum_<SMI::Utils::PythonOp>("op")
+        .value("sum", SMI::Utils::PythonOp::SUM)
+        .value("prod", SMI::Utils::PythonOp::PROD)
+        .value("max", SMI::Utils::PythonOp::MAX)
+        .value("min", SMI::Utils::PythonOp::MIN)
+        .value("custom", SMI::Utils::PythonOp::CUSTOM)
+    ;
+
+    class_<SMI::Utils::PythonFunc>("func", init<SMI::Utils::PythonOp>())
+        .def(init<SMI::Utils::PythonOp, boost::python::object>())
     ;
 }
 
