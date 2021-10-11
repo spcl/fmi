@@ -34,6 +34,13 @@ if node_id == 0:
     print(comm.reduce(41.0, 0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
     print(comm.reduce(42, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
     print(comm.reduce(0.1, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""
+    # allreduce
+    """print(comm.allreduce(42, smi.func(smi.op.sum), smi.types(smi.datatypes.int)))
+    print(comm.allreduce(14.0, smi.func(smi.op.prod), smi.types(smi.datatypes.double)))
+    print(comm.allreduce(42, smi.func(smi.op.max), smi.types(smi.datatypes.int)))
+    print(comm.allreduce(41.0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
+    print(comm.allreduce(42, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
+    print(comm.allreduce(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""
 
 elif node_id == 1:
     # send / recv
@@ -61,3 +68,10 @@ elif node_id == 1:
     comm.reduce(41.0, 0, smi.func(smi.op.min), smi.types(smi.datatypes.double))
     comm.reduce(42, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int))
     comm.reduce(0.2, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double))"""
+    # allreduce
+    """print(comm.allreduce(42, smi.func(smi.op.sum), smi.types(smi.datatypes.int)))
+    print(comm.allreduce(14.0, smi.func(smi.op.prod), smi.types(smi.datatypes.double)))
+    print(comm.allreduce(42, smi.func(smi.op.max), smi.types(smi.datatypes.int)))
+    print(comm.allreduce(41.0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
+    print(comm.allreduce(42, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
+    print(comm.allreduce(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""

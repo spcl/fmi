@@ -19,6 +19,7 @@ BOOST_PYTHON_MODULE(smi)
         .def("gather", &SMI::Utils::PythonCommunicator::gather)
         .def("scatter", &SMI::Utils::PythonCommunicator::scatter)
         .def("reduce", &SMI::Utils::PythonCommunicator::reduce)
+        .def("allreduce", &SMI::Utils::PythonCommunicator::allreduce)
     ;
 
     enum_<SMI::Utils::PythonType>("datatypes")

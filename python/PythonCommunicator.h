@@ -61,6 +61,8 @@ namespace SMI::Utils {
         boost::python::object reduce(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonFunc f,
                                      SMI::Utils::PythonData type);
 
+        boost::python::object allreduce(const boost::python::object& src_data, SMI::Utils::PythonFunc f, SMI::Utils::PythonData type);
+
     private:
         std::shared_ptr<SMI::Communicator> comm;
         SMI::Utils::peer_num peer_id;
@@ -104,6 +106,22 @@ namespace SMI::Utils {
                 list.append(*iter);
             }
             return list;
+        }
+
+        template<typename T>
+        SMI::Utils::Function<T> get_function(SMI::Utils::PythonFunc f)
+        {
+            SMI::Utils::Function<T> func([] (T a, T b) {return a + b;}, true, true);
+            if (f.op == PROD) {
+                func = SMI::Utils::Function<T>([] (T a, T b) {return a * b;}, true, true);
+            } else if (f.op == MAX) {
+                func = SMI::Utils::Function<T>([] (T a, T b) {return std::max(a, b);}, true, true);
+            } else if (f.op == MIN) {
+                func = SMI::Utils::Function<T>([] (T a, T b) {return std::min(a, b);}, true, true);
+            } else if (f.op == CUSTOM) {
+                func = SMI::Utils::Function<T>([this, f] (T a, T b) {return extract_object<T>(f.func(a, b));}, f.comm, f.assoc);
+            }
+            return func;
         }
 
     };
