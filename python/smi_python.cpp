@@ -41,7 +41,7 @@ BOOST_PYTHON_MODULE(smi)
     ;
 
     class_<SMI::Utils::PythonFunc>("func", init<SMI::Utils::PythonOp>())
-        .def(init<SMI::Utils::PythonOp, boost::python::object>())
+        .def(init<SMI::Utils::PythonOp, boost::python::object, bool, bool>())
     ;
 }
 

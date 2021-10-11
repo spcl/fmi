@@ -2,6 +2,7 @@
 #include <utils/Common.h>
 #include <string>
 #include <boost/python/extract.hpp>
+#include <iostream>
 
 SMI::Utils::PythonCommunicator::PythonCommunicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path,
                                                    std::string comm_name, unsigned int faas_memory) {
@@ -183,6 +184,8 @@ SMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, SM
             func = SMI::Utils::Function<int>([] (int a, int b) {return std::max(a, b);}, true, true);
         } else if (f.op == MIN) {
             func = SMI::Utils::Function<int>([] (int a, int b) {return std::min(a, b);}, true, true);
+        } else if (f.op == CUSTOM) {
+            func = SMI::Utils::Function<int>([this, f] (int a, int b) {return extract_object<int>(f.func(a, b));}, f.comm, f.assoc);
         }
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(recvbuf.get());
@@ -197,9 +200,13 @@ SMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, SM
             func = SMI::Utils::Function<double>([] (double a, double b) {return std::max(a, b);}, true, true);
         } else if (f.op == MIN) {
             func = SMI::Utils::Function<double>([] (double a, double b) {return std::min(a, b);}, true, true);
+        } else if (f.op == CUSTOM) {
+            func = SMI::Utils::Function<double>([this, f] (double a, double b) {return extract_object<double>(f.func(a, b));}, f.comm, f.assoc);
         }
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(recvbuf.get());
+    } else {
+        throw "Reductions currently only supported with atomic types";
     }
 
 }

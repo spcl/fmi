@@ -24,10 +24,12 @@ namespace SMI::Utils {
     class PythonFunc {
     public:
         PythonFunc(PythonOp op) : op(op) {}
-        PythonFunc(PythonOp op, const boost::python::object& func) : op(op), func(func) {}
+        PythonFunc(PythonOp op, const boost::python::object& func, bool comm, bool assoc) : op(op), func(func), comm(comm), assoc(assoc) {}
 
         PythonOp op;
         boost::python::object func;
+        bool comm;
+        bool assoc;
     };
 
     class PythonData {
