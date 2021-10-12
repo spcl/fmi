@@ -1,8 +1,9 @@
 # SMI - Serverless Message Interface
+<img src="./smi.svg" width="100%">
 
 ## Dependencies
 
-- C++14 or higher
+- C++17 or higher
 - Boost
 - AWS SDK for C++
 - hiredis
