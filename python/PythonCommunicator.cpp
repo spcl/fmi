@@ -187,8 +187,22 @@ SMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, SM
         auto func = get_function<double>(f);
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(recvbuf.get());
+    } else if (type.type == INT_LIST) {
+        auto val = extract_list<int>(src_data);
+        SMI::Comm::Data<std::vector<int>> sendbuf(val);
+        SMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
+        auto func = get_vec_function<int>(f);
+        comm->reduce(sendbuf, recvbuf, root, func);
+        return boost::python::object(to_list<int>(recvbuf.get()));
+    } else if (type.type == DOUBLE_LIST) {
+        auto val = extract_list<double>(src_data);
+        SMI::Comm::Data<std::vector<double>> sendbuf(val);
+        SMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
+        auto func = get_vec_function<double>(f);
+        comm->reduce(sendbuf, recvbuf, root, func);
+        return boost::python::object(to_list<double>(recvbuf.get()));
     } else {
-        throw std::runtime_error("Reductions currently only supported with atomic types");
+        throw std::runtime_error("Unknown type passed");
     }
 
 }
@@ -209,8 +223,22 @@ SMI::Utils::PythonCommunicator::allreduce(const boost::python::object& src_data,
         auto func = get_function<double>(f);
         comm->allreduce(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
+    } else if (type.type == INT_LIST) {
+        auto val = extract_list<int>(src_data);
+        SMI::Comm::Data<std::vector<int>> sendbuf(val);
+        SMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
+        auto func = get_vec_function<int>(f);
+        comm->allreduce(sendbuf, recvbuf, func);
+        return boost::python::object(to_list<int>(recvbuf.get()));
+    } else if (type.type == DOUBLE_LIST) {
+        auto val = extract_list<double>(src_data);
+        SMI::Comm::Data<std::vector<double>> sendbuf(val);
+        SMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
+        auto func = get_vec_function<double>(f);
+        comm->allreduce(sendbuf, recvbuf, func);
+        return boost::python::object(to_list<double>(recvbuf.get()));
     } else {
-        throw std::runtime_error("Reductions currently only supported with atomic types");
+        throw std::runtime_error("Unknown type passed");
     }
 }
 
@@ -230,7 +258,21 @@ SMI::Utils::PythonCommunicator::scan(const boost::python::object& src_data, SMI:
         auto func = get_function<double>(f);
         comm->scan(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
+    } else if (type.type == INT_LIST) {
+        auto val = extract_list<int>(src_data);
+        SMI::Comm::Data<std::vector<int>> sendbuf(val);
+        SMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
+        auto func = get_vec_function<int>(f);
+        comm->scan(sendbuf, recvbuf, func);
+        return boost::python::object(to_list<int>(recvbuf.get()));
+    } else if (type.type == DOUBLE_LIST) {
+        auto val = extract_list<double>(src_data);
+        SMI::Comm::Data<std::vector<double>> sendbuf(val);
+        SMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
+        auto func = get_vec_function<double>(f);
+        comm->scan(sendbuf, recvbuf, func);
+        return boost::python::object(to_list<double>(recvbuf.get()));
     } else {
-        throw std::runtime_error("Reductions currently only supported with atomic types");
+        throw std::runtime_error("Unknown type passed");
     }
 }

@@ -126,6 +126,26 @@ namespace SMI::Utils {
             return func;
         }
 
+        template<typename A>
+        SMI::Utils::Function<std::vector<A>> get_vec_function(SMI::Utils::PythonFunc f)
+        {
+            using T = std::vector<A>;
+            SMI::Utils::Function<T> func([] (T a, T b) { std::transform(a.begin(), a.end(), b.begin(), a.begin(), std::plus<A>()); return a; }, true, true);
+            if (f.op == PROD) {
+                func = SMI::Utils::Function<T>([] (T a, T b) { std::transform(a.begin(), a.end(), b.begin(), a.begin(), std::multiplies<A>()); return a; }, true, true);
+            } else if (f.op == MAX) {
+                func = SMI::Utils::Function<T>([] (T a, T b) { std::transform(a.begin(), a.end(), b.begin(), a.begin(),
+                                                               [] (A a, A b) {return std::max(a,b);}); return a; }, true, true);
+            } else if (f.op == MIN) {
+                func = SMI::Utils::Function<T>([] (T a, T b) { std::transform(a.begin(), a.end(), b.begin(), a.begin(),
+                                                               [] (A a, A b) {return std::min(a,b);}); return a; }, true, true);
+            } else if (f.op == CUSTOM) {
+                auto iter = [this, f] (A a, A b) {return extract_object<A>(f.func(a, b));};
+                func = SMI::Utils::Function<T>([iter] (T a, T b) { std::transform(a.begin(), a.end(), b.begin(), a.begin(), iter); return a; }, true, true);
+            }
+            return func;
+        }
+
     };
 }
 

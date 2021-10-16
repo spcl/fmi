@@ -1,5 +1,6 @@
 import smi
 import sys
+import numpy as np
 
 
 num_nodes = int(sys.argv[1])
@@ -33,21 +34,28 @@ if node_id == 0:
     print(comm.reduce(42, 0, smi.func(smi.op.max), smi.types(smi.datatypes.int)))
     print(comm.reduce(41.0, 0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
     print(comm.reduce(42, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
-    print(comm.reduce(0.1, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""
+    print(comm.reduce(0.1, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))
+    print(comm.reduce([42, 14], 0, smi.func(smi.op.sum), smi.types(smi.datatypes.int_list, 2)))
+    print(comm.reduce([42, 14], 0, smi.func(smi.op.prod), smi.types(smi.datatypes.int_list, 2)))
+    print(comm.reduce([43.5, 13.5], 0, smi.func(smi.op.max), smi.types(smi.datatypes.double_list, 2)))
+    print(comm.reduce([41.5, 15.5], 0, smi.func(smi.op.min), smi.types(smi.datatypes.double_list, 2)))
+    print(comm.reduce([42, 14], 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int_list, 2)))"""
     # allreduce
     """print(comm.allreduce(42, smi.func(smi.op.sum), smi.types(smi.datatypes.int)))
     print(comm.allreduce(14.0, smi.func(smi.op.prod), smi.types(smi.datatypes.double)))
     print(comm.allreduce(42, smi.func(smi.op.max), smi.types(smi.datatypes.int)))
     print(comm.allreduce(41.0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
     print(comm.allreduce(42, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
-    print(comm.allreduce(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""
+    print(comm.allreduce(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))
+    print(comm.allreduce([42, 14], smi.func(smi.op.sum), smi.types(smi.datatypes.int_list, 2)))"""
     # scan
     """print(comm.scan(42, smi.func(smi.op.sum), smi.types(smi.datatypes.int)))
     print(comm.scan(14.0, smi.func(smi.op.prod), smi.types(smi.datatypes.double)))
     print(comm.scan(42, smi.func(smi.op.max), smi.types(smi.datatypes.int)))
     print(comm.scan(41.0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
     print(comm.scan(42, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
-    print(comm.scan(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""
+    print(comm.scan(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))
+    print(comm.scan([42, 14], smi.func(smi.op.sum), smi.types(smi.datatypes.int_list, 2)))"""
 
 elif node_id == 1:
     # send / recv
@@ -74,18 +82,25 @@ elif node_id == 1:
     comm.reduce(43, 0, smi.func(smi.op.max), smi.types(smi.datatypes.int))
     comm.reduce(41.0, 0, smi.func(smi.op.min), smi.types(smi.datatypes.double))
     comm.reduce(42, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int))
-    comm.reduce(0.2, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double))"""
+    comm.reduce(0.2, 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double))
+    comm.reduce([42, 14], 0, smi.func(smi.op.sum), smi.types(smi.datatypes.int_list, 2))
+    comm.reduce([42, 14], 0, smi.func(smi.op.prod), smi.types(smi.datatypes.int_list, 2))
+    comm.reduce([43.5, 13.5], 0, smi.func(smi.op.max), smi.types(smi.datatypes.double_list, 2))
+    comm.reduce([41.5, 15.5], 0, smi.func(smi.op.min), smi.types(smi.datatypes.double_list, 2))
+    comm.reduce([42, 14], 0, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int_list, 2))"""
     # allreduce
     """print(comm.allreduce(42, smi.func(smi.op.sum), smi.types(smi.datatypes.int)))
     print(comm.allreduce(14.0, smi.func(smi.op.prod), smi.types(smi.datatypes.double)))
     print(comm.allreduce(42, smi.func(smi.op.max), smi.types(smi.datatypes.int)))
     print(comm.allreduce(41.0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
     print(comm.allreduce(42, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
-    print(comm.allreduce(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""
+    print(comm.allreduce(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))
+    print(comm.allreduce([42, 14], smi.func(smi.op.sum), smi.types(smi.datatypes.int_list, 2)))"""
     # scan
     """print(comm.scan(42, smi.func(smi.op.sum), smi.types(smi.datatypes.int)))
     print(comm.scan(14.0, smi.func(smi.op.prod), smi.types(smi.datatypes.double)))
     print(comm.scan(42, smi.func(smi.op.max), smi.types(smi.datatypes.int)))
     print(comm.scan(41.0, smi.func(smi.op.min), smi.types(smi.datatypes.double)))
     print(comm.scan(42, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.int)))
-    print(comm.scan(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))"""
+    print(comm.scan(0.1, smi.func(smi.op.custom, lambda a, b: 2 * a + 2 * b, True, True), smi.types(smi.datatypes.double)))
+    print(comm.scan([42, 14], smi.func(smi.op.sum), smi.types(smi.datatypes.int_list, 2)))"""
