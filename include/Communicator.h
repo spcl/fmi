@@ -58,7 +58,7 @@ namespace SMI {
         template <typename T>
         void reduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f) {
             if (peer_id == root && sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
-                throw "Dimensions of send and receive data must match";
+                throw std::runtime_error("Dimensions of send and receive data must match");
             }
             bool left_to_right = !(f.commutative && f.associative);
             std::string channel = policy->get_channel({Utils::reduce, sendbuf.size_in_bytes(), left_to_right});
@@ -76,7 +76,7 @@ namespace SMI {
         template <typename T>
         void allreduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
             if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
-                throw "Dimensions of send and receive data must match";
+                throw std::runtime_error("Dimensions of send and receive data must match");
             }
             bool left_to_right = !(f.commutative && f.associative);
             std::string channel = policy->get_channel({Utils::allreduce, sendbuf.size_in_bytes(), left_to_right});
@@ -94,7 +94,7 @@ namespace SMI {
         template<typename T>
         void scan(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
             if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
-                throw "Dimensions of send and receive data must match";
+                throw std::runtime_error("Dimensions of send and receive data must match");
             }
             std::string channel = policy->get_channel({Utils::scan, sendbuf.size_in_bytes()});
             channel_data senddata {sendbuf.data(), sendbuf.size_in_bytes()};

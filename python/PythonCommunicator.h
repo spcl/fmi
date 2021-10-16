@@ -76,7 +76,7 @@ namespace SMI::Utils {
             if (o.check()) {
                 val = o();
             } else {
-                throw "Conversion of value not possible";
+                throw std::runtime_error("Conversion of value not possible");
             }
             return val;
         }
@@ -88,7 +88,7 @@ namespace SMI::Utils {
                 auto list = o();
                 return to_vec<T>(list);
             } else {
-                throw "Could not convert to list";
+                throw std::runtime_error("Could not convert to list");
             }
         }
 

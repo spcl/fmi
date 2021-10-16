@@ -17,7 +17,7 @@ namespace SMI::Comm {
             if (std::is_fundamental<T>::value) {
                 return sizeof(T);
             } else {
-                throw "Cannot get size in bytes of non-fundamental type";
+                throw std::runtime_error("Cannot get size in bytes of non-fundamental type");
             }
         }
 

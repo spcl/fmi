@@ -29,7 +29,7 @@ void SMI::Utils::PythonCommunicator::send(const boost::python::object& py_obj, S
         SMI::Comm::Data<std::vector<double>> data = val;
         comm->send<std::vector<double>>(data, dst);
     } else {
-        throw "Unknown type passed";
+        throw std::runtime_error("Unknown type passed");
     }
 }
 
@@ -55,7 +55,7 @@ boost::python::object SMI::Utils::PythonCommunicator::recv(SMI::Utils::peer_num 
         boost::python::object res(to_list<double>(data.get()));
         return res;
     } else {
-        throw "Unknown type passed";
+        throw std::runtime_error("Unknown type passed");
     }
 }
 
@@ -93,7 +93,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
         comm->bcast<std::vector<double>>(data, root);
         return boost::python::object(to_list<double>(data.get()));
     } else {
-        throw "Unknown type passed";
+        throw std::runtime_error("Unknown type passed");
     }
 }
 
@@ -136,17 +136,17 @@ SMI::Utils::PythonCommunicator::gather(const boost::python::object& src_data, SM
         comm->gather<std::vector<double>>(senddata, rcvdata, root);
         return boost::python::object(to_list<double>(rcvdata.get()));
     } else {
-        throw "Unknown type passed";
+        throw std::runtime_error("Unknown type passed");
     }
 }
 
 boost::python::object
 SMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type) {
     if (snd_type.num_objects % num_peers != 0) {
-        throw "List length not divisible by number of peers";
+        throw std::runtime_error("List length not divisible by number of peers");
     }
     if (snd_type.type == INT || snd_type.type == DOUBLE) {
-        throw "Cannot scatter atomic types";
+        throw std::runtime_error("Cannot scatter atomic types");
     } else if (snd_type.type == INT_LIST) {
         SMI::Comm::Data<std::vector<int>> recvdata(snd_type.num_objects / num_peers);
         SMI::Comm::Data<std::vector<int>> senddata;
@@ -166,7 +166,7 @@ SMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, S
         comm->scatter<std::vector<double>>(senddata, recvdata, root);
         return boost::python::object(to_list<double>(recvdata.get()));
     } else {
-        throw "Unknown type passed";
+        throw std::runtime_error("Unknown type passed");
     }
 }
 
@@ -188,7 +188,7 @@ SMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, SM
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(recvbuf.get());
     } else {
-        throw "Reductions currently only supported with atomic types";
+        throw std::runtime_error("Reductions currently only supported with atomic types");
     }
 
 }
@@ -210,7 +210,7 @@ SMI::Utils::PythonCommunicator::allreduce(const boost::python::object& src_data,
         comm->allreduce(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
     } else {
-        throw "Reductions currently only supported with atomic types";
+        throw std::runtime_error("Reductions currently only supported with atomic types");
     }
 }
 
@@ -231,6 +231,6 @@ SMI::Utils::PythonCommunicator::scan(const boost::python::object& src_data, SMI:
         comm->scan(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
     } else {
-        throw "Reductions currently only supported with atomic types";
+        throw std::runtime_error("Reductions currently only supported with atomic types");
     }
 }

@@ -216,7 +216,7 @@ double SMI::Comm::ClientServer::get_operation_latency(SMI::Utils::OperationInfo 
             // Pattern is parallel (num_peers - 1, 1), (num_peers - 2, 1), ... -> Slowest one is (num_peers - 1, 1)
             return get_latency(num_peers - 1, 1, size_in_bytes);
     }
-    throw "Operation not implemented";
+    throw std::runtime_error("Operation not implemented");
 }
 
 double SMI::Comm::ClientServer::get_operation_price(SMI::Utils::OperationInfo op_info) {
@@ -248,5 +248,5 @@ double SMI::Comm::ClientServer::get_operation_price(SMI::Utils::OperationInfo op
             // N - 1 uploads, each is consumed on avg. by (N - 1) / 2 consumers
             return (num_peers - 1) * get_latency(1, ceil((double) (num_peers - 1) / 2.), size_in_bytes);
     }
-    throw "Operation not implemented";
+    throw std::runtime_error("Operation not implemented");
 }

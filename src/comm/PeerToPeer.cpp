@@ -315,7 +315,7 @@ double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op
         case Utils::scan:
             return 2 * floor(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
     }
-    throw "Operation not implemented";
+    throw std::runtime_error("Operation not implemented");
 
 }
 
@@ -371,7 +371,7 @@ double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_i
             // Bounded by 2 * num_peers: https://link.springer.com/content/pdf/10.1007%2F11846802.pdf
             return 2 * num_peers * get_price(1, 1, size_in_bytes);
     }
-    throw "Operation not implemented";
+    throw std::runtime_error("Operation not implemented");
 }
 
 

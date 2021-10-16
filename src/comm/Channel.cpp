@@ -12,7 +12,7 @@ std::shared_ptr<SMI::Comm::Channel> SMI::Comm::Channel::get_channel(std::string 
     } else if (name == "Direct") {
         return std::make_shared<Direct>(params, model_params);
     } else {
-        throw "Unknown channel name passed";
+        throw std::runtime_error("Unknown channel name passed");
     }
 }
 
