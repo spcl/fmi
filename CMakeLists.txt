@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.10)
 project(SMI)
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(Boost_USE_STATIC_LIBS   ON)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 get_directory_property(hasParent PARENT_DIRECTORY)
@@ -15,7 +18,7 @@ find_package(hiredis REQUIRED)
 
 add_subdirectory(extern/TCPunch/client/)
 
-add_library(SMI SHARED src/Communicator.cpp src/utils/Configuration.cpp src/comm/Channel.cpp src/comm/ClientServer.cpp
+add_library(SMI STATIC src/Communicator.cpp src/utils/Configuration.cpp src/comm/Channel.cpp src/comm/ClientServer.cpp
         src/comm/S3.cpp src/comm/Redis.cpp src/utils/ChannelPolicy.cpp src/comm/PeerToPeer.cpp src/comm/Direct.cpp)
 
 target_include_directories(SMI PRIVATE ${Boost_INCLUDE_DIRS} ${TCPUNCH_INCLUDE_DIRS})

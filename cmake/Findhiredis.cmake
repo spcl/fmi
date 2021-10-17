@@ -16,7 +16,7 @@ else()
 
     find_library(
             HIREDIS_LIBRARY
-            NAMES hiredis
+            NAMES libhiredis.a hiredis
             HINTS ${HIREDIS_ROOT_DIR}
             PATH_SUFFIXES ${CMAKE_INSTALL_LIBDIR})
 
