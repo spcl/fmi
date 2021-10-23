@@ -225,7 +225,7 @@ double SMI::Comm::ClientServer::get_operation_price(SMI::Utils::OperationInfo op
         case Utils::send:
             return get_price(1, 1, size_in_bytes);
         case Utils::bcast:
-            return num_peers * get_price(1, num_peers - 1, size_in_bytes);
+            return get_price(1, num_peers - 1, size_in_bytes);
         case Utils::barrier:
         {
             double upload = get_price(num_peers, 1, 1);
