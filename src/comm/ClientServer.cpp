@@ -245,8 +245,12 @@ double SMI::Comm::ClientServer::get_operation_price(SMI::Utils::OperationInfo op
             return reduction + bcast;
         }
         case Utils::scan:
-            // N - 1 uploads, each is consumed on avg. by (N - 1) / 2 consumers
-            return (num_peers - 1) * get_latency(1, ceil((double) (num_peers - 1) / 2.), size_in_bytes);
+            double costs = 0.;
+            // N - 1 uploads with varying number of consumers
+            for (int i = 1; i < num_peers; i++) {
+                costs += get_latency(1, num_peers - i, size_in_bytes);
+            }
+            return costs;
     }
     throw std::runtime_error("Operation not implemented");
 }
