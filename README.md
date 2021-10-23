@@ -39,3 +39,8 @@ make
 import smi
 comm = smi.Communicator(peer_id, num_peers, "config/smi.json", "MyApp", 512);
 ```
+### Docker Container
+The Docker containers [SMI-build-docker](https://github.com/OpenCoreCH/SMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.
+
+## Examples
+C++ sample code for the library is available at [tests/communicator.cpp](tests/communicator.cpp), the usage from Python is demonstrated in [python/tests/client.py](python/tests/client.py). 
