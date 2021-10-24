@@ -346,7 +346,6 @@ double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_i
                 costs += std::pow(2, floor(log2(num_peers)) - i) * get_price(1, 1, i * size_in_bytes);
             }
             return costs;
-            return costs;
         }
         case Utils::barrier:
         size_in_bytes = 1;
