@@ -300,16 +300,18 @@ double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op
             if (op_info.left_to_right) {
                 // Reduce with gather, followed by bcast
                 double latency = 0.;
-                for (int i = 1; i <= ceil(log2(num_peers)); i++) {
+                for (int i = 1; i <= floor(log2(num_peers)); i++) {
                     latency += get_latency(1, 1, i * size_in_bytes);
                 }
-                latency += ceil(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+                int rem_nodes = num_peers - (int) std::pow(2, floor(log2(num_peers)));
+                latency += get_latency(1, 1, rem_nodes * size_in_bytes);
+                latency += ceil(log2(num_peers)) * get_latency(1, 1, size_in_bytes); // bcast
                 return latency;
             } else {
                 // Send and recv in every round
                 double latency = 2 * floor(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
                 if (floor(log2(num_peers)) != num_peers) {
-                    // 2 additional rounds in beginning / end
+                    // 2 additional rounds in beginning / end with only send / receive
                     latency += 2 * get_latency(1, 1, size_in_bytes);
                 }
                 return latency;
@@ -356,14 +358,12 @@ double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_i
                 // Overapproximation for non power of two
                 costs += std::pow(2, floor(log2(num_peers)) - i) * get_price(1, 1, i * size_in_bytes);
             }
-            double power_of_two = std::pow(2, floor(log2(num_peers)));
-            double comm_rounds = power_of_two - 1 + (num_peers - power_of_two);
+            double comm_rounds = num_peers - 1;
             costs += comm_rounds * get_price(1, 1, size_in_bytes);
             return costs;
         } else {
             // Send and recv in every round
-            double power_of_two = std::pow(2, floor(log2(num_peers)));
-            double comm_rounds = 2 * (power_of_two - 1) + 2 * (num_peers - power_of_two);
+            double comm_rounds = 2 * (num_peers - 1);
             return comm_rounds * get_price(1, 1, size_in_bytes);
         }
         case Utils::scan:
