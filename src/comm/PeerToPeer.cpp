@@ -326,9 +326,7 @@ double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_i
             return get_price(1, 1, size_in_bytes);
         case Utils::bcast:
         {
-            // Number of comm. doubles in every round, for non-power-of two one additional message per node
-            double power_of_two = std::pow(2, floor(log2(num_peers)));
-            double comm_rounds = power_of_two - 1 + (num_peers - power_of_two);
+            double comm_rounds = num_peers - 1;
             return comm_rounds * get_price(1, 1, size_in_bytes);
         }
         case Utils::reduce:
