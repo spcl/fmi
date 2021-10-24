@@ -286,10 +286,12 @@ double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op
         {
             // ceil(log2(num_peers)) rounds, doubling buffer size in each round
             double latency = 0.;
-            for (int i = 1; i <= ceil(log2(num_peers)); i++) {
-                // Overapproximation for non power of two (too large file sizes)
+            for (int i = 1; i <= floor(log2(num_peers)); i++) {
                 latency += get_latency(1, 1, i * size_in_bytes);
             }
+            // Different buffer sizes for non power of two
+            int rem_nodes = num_peers - (int) std::pow(2, floor(log2(num_peers)));
+            latency += get_latency(1, 1, rem_nodes * size_in_bytes);
             return latency;
         }
         case Utils::barrier:
@@ -340,9 +342,10 @@ double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_i
         {
             double costs = 0.;
             for (int i = 1; i <= ceil(log2(num_peers)); i++) {
-                // Overapproximation for non power of two (too large file sizes, too many comm.)
+                // Fast overapproximation for non power of two
                 costs += std::pow(2, floor(log2(num_peers)) - i) * get_price(1, 1, i * size_in_bytes);
             }
+            return costs;
             return costs;
         }
         case Utils::barrier:
