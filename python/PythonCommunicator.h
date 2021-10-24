@@ -65,6 +65,8 @@ namespace SMI::Utils {
 
         boost::python::object scan(const boost::python::object& src_data, SMI::Utils::PythonFunc f, SMI::Utils::PythonData type);
 
+        void hint(SMI::Utils::Hint hint);
+
     private:
         std::shared_ptr<SMI::Communicator> comm;
         SMI::Utils::peer_num peer_id;

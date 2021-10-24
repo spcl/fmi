@@ -276,3 +276,7 @@ SMI::Utils::PythonCommunicator::scan(const boost::python::object& src_data, SMI:
         throw std::runtime_error("Unknown type passed");
     }
 }
+
+void SMI::Utils::PythonCommunicator::hint(SMI::Utils::Hint hint) {
+    comm->hint(hint);
+}

@@ -18,7 +18,7 @@ namespace SMI {
         }
         double gib_second_price = config.get_faas_price();
         double faas_price = (double) faas_memory / 1024. * gib_second_price;
-        set_channel_policy(std::make_shared<SMI::Utils::ChannelPolicy>(channels, num_peers, faas_price, hint));
+        set_channel_policy(std::make_shared<SMI::Utils::ChannelPolicy>(channels, num_peers, faas_price, channel_hint));
     }
 
     void Communicator::register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel> c) {
@@ -38,8 +38,8 @@ namespace SMI {
         this->policy = std::move(policy);
     }
 
-    void Communicator::set_hint(SMI::Utils::Hint hint) {
-        this->hint = hint;
+    void Communicator::hint(SMI::Utils::Hint hint) {
+        this->channel_hint = hint;
         policy->set_hint(hint);
     }
 

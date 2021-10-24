@@ -112,7 +112,7 @@ namespace SMI {
 
         void set_channel_policy(std::shared_ptr<SMI::Utils::ChannelPolicy> policy);
 
-        void set_hint(SMI::Utils::Hint hint);
+        void hint(SMI::Utils::Hint hint);
 
     private:
         std::shared_ptr<SMI::Utils::ChannelPolicy> policy;
@@ -120,7 +120,7 @@ namespace SMI {
         SMI::Utils::peer_num peer_id;
         SMI::Utils::peer_num num_peers;
         std::string comm_name;
-        SMI::Utils::Hint hint = SMI::Utils::Hint::cheap;
+        SMI::Utils::Hint channel_hint = SMI::Utils::Hint::cheap;
 
         template <typename T>
         raw_func convert_to_raw_function(SMI::Utils::Function<T> f, std::size_t size_in_bytes) {

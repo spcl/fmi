@@ -21,6 +21,7 @@ BOOST_PYTHON_MODULE(smi)
         .def("reduce", &SMI::Utils::PythonCommunicator::reduce)
         .def("allreduce", &SMI::Utils::PythonCommunicator::allreduce)
         .def("scan", &SMI::Utils::PythonCommunicator::scan)
+        .def("hint", &SMI::Utils::PythonCommunicator::hint)
     ;
 
     enum_<SMI::Utils::PythonType>("datatypes")
@@ -44,6 +45,11 @@ BOOST_PYTHON_MODULE(smi)
 
     class_<SMI::Utils::PythonFunc>("func", init<SMI::Utils::PythonOp>())
         .def(init<SMI::Utils::PythonOp, boost::python::object, bool, bool>())
+    ;
+
+    enum_<SMI::Utils::Hint>("hints")
+        .value("cheap", SMI::Utils::Hint::cheap)
+        .value("fast", SMI::Utils::Hint::fast)
     ;
 }
 

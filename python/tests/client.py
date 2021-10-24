@@ -7,6 +7,8 @@ num_nodes = int(sys.argv[1])
 node_id = int(sys.argv[2])
 comm = smi.Communicator(node_id, num_nodes, "../../config/smi.json", "Test", 512)
 
+comm.hint(smi.hints.fast)
+
 comm.barrier()
 
 if node_id == 0:
