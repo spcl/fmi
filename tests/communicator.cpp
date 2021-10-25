@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <omp.h>
-#include "../include/Communicator.h"
+#include "../include/smi.h"
 
 BOOST_AUTO_TEST_SUITE(Communicator);
 
