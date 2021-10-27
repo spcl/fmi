@@ -7,6 +7,7 @@
 #include <functional>
 
 namespace SMI::Comm {
+    //! Small data wrapper around a generic type T with some helper utilities
     template<typename T>
     class Data {
     public:
@@ -21,10 +22,12 @@ namespace SMI::Comm {
             }
         }
 
+        //! Gets pointer to the start of the buffer.
         char* data() {
             return reinterpret_cast<char*>(&val);
         }
 
+        //! Returns the value
         T get() const {
             return val;
         }
@@ -43,6 +46,7 @@ namespace SMI::Comm {
 
     };
 
+    //! Wrapper around an arbitrary STL vector
     template<typename A>
     class Data<std::vector<A>> {
     public:
@@ -54,10 +58,12 @@ namespace SMI::Comm {
             return sizeof(A) * val.size();
         }
 
+        //! Pointer to the start of the vector
         char* data() {
             return reinterpret_cast<char*>(val.data());
         }
 
+        //! Returns the vector
         std::vector<A> get() const {
             return val;
         }
@@ -66,6 +72,7 @@ namespace SMI::Comm {
         std::vector<A> val;
     };
 
+    //! Instantiate data with a pointer to memory and an arbitrary size. Should only be used in exceptional cases, the native types should be used otherwise.
     template<>
     class Data<void*> {
     public:

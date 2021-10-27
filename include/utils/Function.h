@@ -2,6 +2,7 @@
 #define SMI_FUNCTION_H
 
 namespace SMI::Utils {
+    //! Small wrapper around an arbitrary C++ binary function with signature T(T,T), i.e. accepting two arguments of type T and returning one of type T.
     template<typename T>
     class Function {
     public:
@@ -11,7 +12,9 @@ namespace SMI::Utils {
             return f(a, b);
         }
 
+        //! User provided information about commutativity
         bool commutative;
+        //! User provided information about associativity
         bool associative;
     private:
         std::function<T(T,T)> f;

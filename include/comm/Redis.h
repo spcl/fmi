@@ -7,7 +7,7 @@
 #include <hiredis/hiredis.h>
 
 namespace SMI::Comm {
-
+    //! Channel that uses Redis with the Hiredis client library as storage backend.
     class Redis : public ClientServer {
     public:
         explicit Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params);

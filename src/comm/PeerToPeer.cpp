@@ -130,6 +130,10 @@ void SMI::Comm::PeerToPeer::allreduce_no_order(channel_data sendbuf, channel_dat
 }
 
 void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+    bool left_to_right = !(f.commutative && f.associative);
+    if (left_to_right) {
+        scan_ltr(sendbuf, recvbuf, f);
+    }
     int rounds = floor(log2(num_peers));
     for (int i = 0; i < rounds; i ++) {
         if ((peer_id & ((int) std::pow(2, i + 1) - 1)) == (int) std::pow(2, i + 1) - 1) {
@@ -156,6 +160,19 @@ void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw
                 recv(recvbuf, src);
                 f.f(sendbuf.buf, recvbuf.buf);
             }
+        }
+    }
+    std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
+}
+
+void SMI::Comm::PeerToPeer::scan_ltr(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
+    if (peer_id == 0) {
+        send(sendbuf, 1);
+    } else {
+        recv(recvbuf, peer_id - 1);
+        f.f(sendbuf.buf, recvbuf.buf);
+        if (peer_id < num_peers - 1) {
+            send(sendbuf, peer_id + 1);
         }
     }
     std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
@@ -372,6 +389,3 @@ double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_i
     }
     throw std::runtime_error("Operation not implemented");
 }
-
-
-

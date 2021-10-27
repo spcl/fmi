@@ -4,6 +4,7 @@
 #include "PeerToPeer.h"
 
 namespace SMI::Comm {
+    //! Channel that uses the TCPunch TCP NAT Hole Punching Library for connection establishment.
     class Direct : public PeerToPeer {
     public:
         explicit Direct(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params);
@@ -17,6 +18,7 @@ namespace SMI::Comm {
         double get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) override;
 
     private:
+        //! Contains the socket file descriptor for the communication with the peers.
         std::vector<int> sockets;
         std::string hostname;
         int port;
@@ -29,6 +31,7 @@ namespace SMI::Comm {
         unsigned int requests_per_hour;
         bool include_infrastructure_costs;
 
+        //! Checks if connection with a peer partner_id is already established, otherwise establishes it using TCPunch.
         void check_socket(Utils::peer_num partner_id, std::string pair_name);
     };
 }

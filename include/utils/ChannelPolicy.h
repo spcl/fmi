@@ -7,14 +7,16 @@
 #include "../comm/Channel.h"
 
 namespace SMI::Utils {
-
+    //! Default channel policy that either selects the fastest or cheapest channel according to the performance model, based on the currently set hint.
     class ChannelPolicy {
     public:
         ChannelPolicy(std::map<std::string, std::shared_ptr<SMI::Comm::Channel>>& channels, peer_num num_peers,
                       double faas_price, Hint hint);
 
+        //! Return the ideal channel for the given operation.
         std::string get_channel(OperationInfo op_info);
 
+        //! Changes the hint that is used by the channel policy.
         void set_hint(Hint hint);
 
     private:

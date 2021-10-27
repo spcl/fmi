@@ -6,13 +6,23 @@
 #include "utils/ChannelPolicy.h"
 
 namespace SMI {
+    //! Interface that is exposed to the user for interaction with the SMI system.
     class Communicator {
     public:
+        /*!
+         * @param peer_id ID of the peer in the range [0 .. num_peers - 1]
+         * @param num_peers Number of peers participating in the communicator
+         * @param config_path Path to the SMI JSON configuration file
+         * @param comm_name Name of the communicator, needs to be unique when multiple communicators are used concurrently
+         * @param faas_memory Amount of memory (in MiB) that is allocated to the function, used for performance model calculations.
+         */
         Communicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name,
                      unsigned int faas_memory = 128);
 
+        //! Finalizes all active channels
         ~Communicator();
 
+        //! Send buf to peer dest
         template<typename T>
         void send(Comm::Data<T> &buf, SMI::Utils::peer_num dest) {
             std::string channel = policy->get_channel({Utils::send, buf.size_in_bytes()});
@@ -20,6 +30,7 @@ namespace SMI {
             channels[channel]->send(data, dest);
         }
 
+        //! Receive data from src and store data into the provided buf
         template<typename T>
         void recv(Comm::Data<T> &buf, SMI::Utils::peer_num src) {
             std::string channel = policy->get_channel({Utils::send, buf.size_in_bytes()});
@@ -27,6 +38,7 @@ namespace SMI {
             channels[channel]->recv(data, src);
         }
 
+        //! Broadcast the data that is in the provided buf of the root peer. Result is stored in buf for all peers.
         template<typename T>
         void bcast(Comm::Data<T> &buf, SMI::Utils::peer_num root) {
             std::string channel = policy->get_channel({Utils::bcast, buf.size_in_bytes()});
@@ -34,11 +46,17 @@ namespace SMI {
             channels[channel]->bcast(data, root);
         }
 
+        //! Barrier synchronization collective
         void barrier() {
             std::string channel = policy->get_channel({Utils::barrier, 0});
             channels[channel]->barrier();
         }
 
+        //! Gather the data of the individuals peers (in sendbuf) into the recvbuf of root.
+        /*!
+         * @param sendbuf Data to send to root, needs to be the same size for all peers.
+         * @param recvbuf Receive buffer, only relevant for the root process. Size needs to be num_peers * sendbuf.size
+         */
         template<typename T>
         void gather(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
             std::string channel = policy->get_channel({Utils::gather, sendbuf.size_in_bytes()});
@@ -47,6 +65,11 @@ namespace SMI {
             channels[channel]->gather(senddata, recvdata, root);
         }
 
+        //! Scatter the data from root's sendbuf to the recvbuf of all peers.
+        /*!
+         * @param sendbuf The data to scatter, size needs to be recvbuf.size * num_peers (i.e., divisible by the number of peers). Only relevant for the root peer.
+         * @param recvbuf Buffer to receive the data, relevant for all peers.
+         */
         template<typename T>
         void scatter(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root) {
             std::string channel = policy->get_channel({Utils::scatter, recvbuf.size_in_bytes()});
@@ -55,6 +78,12 @@ namespace SMI {
             channels[channel]->scatter(senddata, recvdata, root);
         }
 
+        //! Perform a reduction with the reduction function f.
+        /*! Depending on the associativity / commutativity of f, a different implementation for the reduction may be used.
+         * However, in the same topology, the evaluation order should always be the same, irrespectively of the associativity / commutativitiy.
+         * @param sendbuf Data to send, relevant for all peers.
+         * @param recvbuf Receive buffer that contains the final result, only relevant for root. Needs to have the same size as the sendbuf.
+         */
         template <typename T>
         void reduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::peer_num root, SMI::Utils::Function<T> f) {
             if (peer_id == root && sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
@@ -73,6 +102,12 @@ namespace SMI {
             channels[channel]->reduce(senddata, recvdata, root, raw_f);
         }
 
+        //! Perform a reduction with the reduction function f and make the result available to all peers.
+        /*! Depending on the associativity / commutativity of f, a different implementation for the reduction may be used.
+         * However, in the same topology, the evaluation order should always be the same, irrespectively of the associativity / commutativitiy.
+         * @param sendbuf Data to send, relevant for all peers.
+         * @param recvbuf Receive buffer that contains the final result, relevant for all peers. Needs to have the same size as the sendbuf.
+         */
         template <typename T>
         void allreduce(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
             if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
@@ -91,6 +126,12 @@ namespace SMI {
             channels[channel]->allreduce(senddata, recvdata, raw_f);
         }
 
+        //! Inclusive prefix scan.
+        /*! Depending on the associativity / commutativity of f, a different implementation for the reduction may be used.
+         * However, in the same topology, the evaluation order should always be the same, irrespectively of the associativity / commutativitiy.
+         * @param sendbuf Data to send, relevant for all peers.
+         * @param recvbuf Receive buffer that contains the final result, relevant for all peers. Needs to have the same size as the sendbuf.
+         */
         template<typename T>
         void scan(Comm::Data<T> &sendbuf, Comm::Data<T> &recvbuf, SMI::Utils::Function<T> f) {
             if (sendbuf.size_in_bytes() != recvbuf.size_in_bytes()) {
@@ -108,10 +149,13 @@ namespace SMI {
             channels[channel]->scan(senddata, recvdata, raw_f);
         }
 
+        //! Add a new channel to the communicator with the given name by providing a pointer to it.
         void register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel>);
 
+        //! Change the channel policy the communicator is using.
         void set_channel_policy(std::shared_ptr<SMI::Utils::ChannelPolicy> policy);
 
+        //! Set the hint (optimization objective) of the channel selection procedure.
         void hint(SMI::Utils::Hint hint);
 
     private:
@@ -122,6 +166,7 @@ namespace SMI {
         std::string comm_name;
         SMI::Utils::Hint channel_hint = SMI::Utils::Hint::cheap;
 
+        //! Helper utility to convert a typed function to a raw function without type information.
         template <typename T>
         raw_func convert_to_raw_function(SMI::Utils::Function<T> f, std::size_t size_in_bytes) {
             auto func = [f](char* a, char* b) -> void {
@@ -131,6 +176,7 @@ namespace SMI {
             return func;
         }
 
+        //! Helper utility to convert a vector function to a raw function that operates directly on memory pointers.
         template <typename A>
         raw_func convert_to_raw_function(SMI::Utils::Function<std::vector<A>> f, std::size_t size_in_bytes) {
             auto func = [f, size_in_bytes](char* a, char* b) -> void {
