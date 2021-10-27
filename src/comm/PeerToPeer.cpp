@@ -133,7 +133,25 @@ void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw
     bool left_to_right = !(f.commutative && f.associative);
     if (left_to_right) {
         scan_ltr(sendbuf, recvbuf, f);
+    } else {
+        scan_no_order(sendbuf, recvbuf, f);
     }
+}
+
+void SMI::Comm::PeerToPeer::scan_ltr(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
+    if (peer_id == 0) {
+        send(sendbuf, 1);
+        std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
+    } else {
+        recv(recvbuf, peer_id - 1);
+        f.f(recvbuf.buf, sendbuf.buf);
+        if (peer_id < num_peers - 1) {
+            send(recvbuf, peer_id + 1);
+        }
+    }
+}
+
+void SMI::Comm::PeerToPeer::scan_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
     int rounds = floor(log2(num_peers));
     for (int i = 0; i < rounds; i ++) {
         if ((peer_id & ((int) std::pow(2, i + 1) - 1)) == (int) std::pow(2, i + 1) - 1) {
@@ -160,19 +178,6 @@ void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw
                 recv(recvbuf, src);
                 f.f(sendbuf.buf, recvbuf.buf);
             }
-        }
-    }
-    std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
-}
-
-void SMI::Comm::PeerToPeer::scan_ltr(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
-    if (peer_id == 0) {
-        send(sendbuf, 1);
-    } else {
-        recv(recvbuf, peer_id - 1);
-        f.f(sendbuf.buf, recvbuf.buf);
-        if (peer_id < num_peers - 1) {
-            send(sendbuf, peer_id + 1);
         }
     }
     std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
@@ -334,7 +339,12 @@ double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op
                 return latency;
             }
         case Utils::scan:
-            return 2 * floor(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+            if (op_info.left_to_right) {
+                return (num_peers - 1) * get_latency(1, 1, size_in_bytes);
+            } else {
+                return 2 * floor(log2(num_peers)) * get_latency(1, 1, size_in_bytes);
+            }
+
     }
     throw std::runtime_error("Operation not implemented");
 
@@ -384,8 +394,13 @@ double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_i
             return comm_rounds * get_price(1, 1, size_in_bytes);
         }
         case Utils::scan:
-            // Bounded by 2 * num_peers: https://link.springer.com/content/pdf/10.1007%2F11846802.pdf
-            return 2 * num_peers * get_price(1, 1, size_in_bytes);
+            if (op_info.left_to_right) {
+                return (num_peers - 1) * get_price(1, 1, size_in_bytes);
+            } else {
+                // Binomial tree, bounded by 2 * num_peers: https://link.springer.com/content/pdf/10.1007%2F11846802.pdf
+                return 2 * num_peers * get_price(1, 1, size_in_bytes);
+            }
+
     }
     throw std::runtime_error("Operation not implemented");
 }

@@ -40,7 +40,7 @@ namespace SMI::Comm {
         //! For associative and commutative functions, allreduce_no_order is called. Otherwise, reduce followed by bcast is used.
         void allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) override;
 
-        //! For associative and commutative functions, a binomial tree with an up- and down-phase is used. Otherwise, scan_ltr is called
+        //! For associative and commutative functions, scan_no_order is called. Otherwise, scan_ltr is called
         void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) override;
 
         //! Send an object to peer with ID peer_id. Needs to be implemented by the channels.
@@ -65,6 +65,9 @@ namespace SMI::Comm {
 
         //! Linear function application / sending
         void scan_ltr(channel_data sendbuf, channel_data recvbuf, const raw_function& f);
+
+        //! Binomial tree with up- and down-phase
+        void scan_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function& f);
 
     private:
         //! Allows to implement all collectives as if root were 0

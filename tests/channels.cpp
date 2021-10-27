@@ -43,7 +43,7 @@ std::map<std::string, std::string> redis_test_model_params = {
 };
 
 std::map<std::string, std::string> direct_test_params = {
-        {"host", "192.168.0.166"},
+        {"host", "127.0.0.1"},
         {"port", "10000"},
         {"max_timeout", "1000"}
 };
@@ -58,8 +58,8 @@ std::map<std::string, std::string> direct_test_model_params = {
 };
 
 std::map< std::string, std::pair< std::map<std::string, std::string>, std::map<std::string, std::string> > > backends = {
-        {"S3", {s3_test_params, s3_test_model_params}},
-        {"Redis", {redis_test_params, redis_test_model_params}},
+        //{"S3", {s3_test_params, s3_test_model_params}},
+       // {"Redis", {redis_test_params, redis_test_model_params}},
         {"Direct", {direct_test_params, direct_test_model_params}}
 };
 
@@ -637,6 +637,49 @@ BOOST_AUTO_TEST_CASE(scan) {
             for (int i = 0; i < num_peers; i++) {
                 prefix_sum += (i + 1);
                 BOOST_CHECK_EQUAL(prefix_sum, res[i]);
+            }
+        } else {
+            exit(0);
+        }
+
+
+    }
+}
+
+BOOST_AUTO_TEST_CASE(scan_ltr) {
+    for (auto const & backend_data : backends) {
+        auto channel_name = backend_data.first;
+        auto test_params = backend_data.second.first;
+        auto model_params = backend_data.second.second;
+
+        constexpr int num_peers = 8;
+        int* res = static_cast<int*>(mmap(nullptr, sizeof(int) * num_peers, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
+        int peer_id = 0;
+        for (int i = 1; i < num_peers; i ++) {
+            int pid = fork();
+            if (pid == 0) {
+                peer_id = i;
+                break;
+            }
+        }
+        auto f = [] (char* a, char* b) {
+            int* dest = reinterpret_cast<int*>(a);
+            *dest = *((int*) a) - *((int*) b);
+        };
+        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        ch->set_peer_id(peer_id);
+        ch->set_num_peers(num_peers);
+        ch->set_comm_name(comm_name);
+        int val = peer_id;
+        ch->scan({reinterpret_cast<char*>(&val), sizeof(int)}, {reinterpret_cast<char*>(res + peer_id), sizeof(int)}, {f, false, false});
+        ch->finalize();
+        if (peer_id == 0) {
+            int status = 0;
+            while (wait(&status) > 0);
+            int result = 0;
+            for (int i = 0; i < num_peers; i++) {
+                result = result - i;
+                BOOST_CHECK_EQUAL(result, res[i]);
             }
         } else {
             exit(0);
