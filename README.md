@@ -1,4 +1,4 @@
-<img src="./smi.svg" width="100%">
+<img src="./docs/smi.svg" width="100%">
 
 # Serverless Message Interface
 
