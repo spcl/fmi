@@ -42,7 +42,7 @@
       "include_infrastructure_costs": true
     },
     "Direct": {
-      "bandwidth": 250.0,
+      "bandwidth": 400.0,
       "overhead": 0.34,
       "transfer_price": 0.0,
       "vm_price": 0.0134,
