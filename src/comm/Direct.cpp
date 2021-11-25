@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <boost/log/trivial.hpp>
 #include <thread>
+#include <netinet/tcp.h>
 
 SMI::Comm::Direct::Direct(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) {
     hostname = params["host"];
@@ -58,6 +59,9 @@ void SMI::Comm::Direct::check_socket(SMI::Utils::peer_num partner_id, std::strin
         timeout.tv_usec = (max_timeout % 1000) * 1000;
         setsockopt(sockets[partner_id], SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof timeout);
         setsockopt(sockets[partner_id], SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof timeout);
+        // Disable Nagle algorithm to avoid 40ms TCP ack delays
+        int one = 1;
+        setsockopt(sockets[partner_id], SOL_TCP, TCP_NODELAY, &one, sizeof(one));
     }
 }
 
