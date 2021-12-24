@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Resources:
+  python36:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: fmi-python36
+      ContentUri: .
+      CompatibleRuntimes:
+        - python3.6
+    Metadata:
+      BuildMethod: makefile

@@ -4,3 +4,5 @@ build/
 .DS_Store
 docs/html/
 docs/latex/
+.aws-sam/
+samconfig.toml
