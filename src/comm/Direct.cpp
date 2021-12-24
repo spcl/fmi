@@ -61,6 +61,10 @@ void SMI::Comm::Direct::check_socket(SMI::Utils::peer_num partner_id, std::strin
         setsockopt(sockets[partner_id], SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof timeout);
         // Disable Nagle algorithm to avoid 40ms TCP ack delays
         int one = 1;
+        // SOL_TCP not defined on macOS
+        #if !defined(SOL_TCP) && defined(IPPROTO_TCP)
+        #define SOL_TCP IPPROTO_TCP
+        #endif
         setsockopt(sockets[partner_id], SOL_TCP, TCP_NODELAY, &one, sizeof(one));
     }
 }
