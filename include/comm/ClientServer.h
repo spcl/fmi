@@ -1,5 +1,5 @@
-#ifndef SMI_CLIENTSERVER_H
-#define SMI_CLIENTSERVER_H
+#ifndef FMI_CLIENTSERVER_H
+#define FMI_CLIENTSERVER_H
 
 #include "Channel.h"
 #include <map>
@@ -76,4 +76,4 @@ namespace FMI::Comm {
 
 
 
-#endif //SMI_CLIENTSERVER_H
+#endif //FMI_CLIENTSERVER_H

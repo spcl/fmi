@@ -1,5 +1,5 @@
-#ifndef SMI_DIRECT_H
-#define SMI_DIRECT_H
+#ifndef FMI_DIRECT_H
+#define FMI_DIRECT_H
 
 #include "PeerToPeer.h"
 
@@ -38,4 +38,4 @@ namespace FMI::Comm {
 
 
 
-#endif //SMI_DIRECT_H
+#endif //FMI_DIRECT_H

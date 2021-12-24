@@ -1,5 +1,5 @@
-#ifndef SMI_DATA_H
-#define SMI_DATA_H
+#ifndef FMI_DATA_H
+#define FMI_DATA_H
 
 #include <any>
 #include <vector>
@@ -99,4 +99,4 @@ namespace FMI::Comm {
 
 }
 
-#endif //SMI_DATA_H
+#endif //FMI_DATA_H

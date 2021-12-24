@@ -1,6 +1,6 @@
-#ifndef SMI_SMI_H
-#define SMI_SMI_H
+#ifndef FMI_FMI_H
+#define FMI_FMI_H
 
 #include "Communicator.h"
 
-#endif //SMI_SMI_H
+#endif //FMI_FMI_H

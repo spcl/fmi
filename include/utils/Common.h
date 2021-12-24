@@ -1,8 +1,8 @@
-#ifndef SMI_COMMON_H
-#define SMI_COMMON_H
+#ifndef FMI_COMMON_H
+#define FMI_COMMON_H
 #include <exception>
 
-//! Contains various utilities that are used in SMI
+//! Contains various utilities that are used in FMI
 namespace FMI::Utils {
     //! Type for peer IDs / numbers
     using peer_num = unsigned int;
@@ -33,4 +33,4 @@ namespace FMI::Utils {
 
 }
 
-#endif //SMI_COMMON_H
+#endif //FMI_COMMON_H

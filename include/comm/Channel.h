@@ -1,5 +1,5 @@
-#ifndef SMI_CHANNEL_H
-#define SMI_CHANNEL_H
+#ifndef FMI_CHANNEL_H
+#define FMI_CHANNEL_H
 
 #include "Data.h"
 #include <string>
@@ -139,4 +139,4 @@ namespace FMI::Comm {
 
 
 
-#endif //SMI_CHANNEL_H
+#endif //FMI_CHANNEL_H

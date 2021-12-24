@@ -1,18 +1,18 @@
-#ifndef SMI_COMMUNICATOR_H
-#define SMI_COMMUNICATOR_H
+#ifndef FMI_COMMUNICATOR_H
+#define FMI_COMMUNICATOR_H
 
 #include "./utils/Configuration.h"
 #include "comm/Channel.h"
 #include "utils/ChannelPolicy.h"
 
 namespace FMI {
-    //! Interface that is exposed to the user for interaction with the SMI system.
+    //! Interface that is exposed to the user for interaction with the FMI system.
     class Communicator {
     public:
         /*!
          * @param peer_id ID of the peer in the range [0 .. num_peers - 1]
          * @param num_peers Number of peers participating in the communicator
-         * @param config_path Path to the SMI JSON configuration file
+         * @param config_path Path to the FMI JSON configuration file
          * @param comm_name Name of the communicator, needs to be unique when multiple communicators are used concurrently
          * @param faas_memory Amount of memory (in MiB) that is allocated to the function, used for performance model calculations.
          */
@@ -192,4 +192,4 @@ namespace FMI {
 
 
 
-#endif //SMI_COMMUNICATOR_H
+#endif //FMI_COMMUNICATOR_H

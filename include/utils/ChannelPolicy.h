@@ -1,5 +1,5 @@
-#ifndef SMI_CHANNELPOLICY_H
-#define SMI_CHANNELPOLICY_H
+#ifndef FMI_CHANNELPOLICY_H
+#define FMI_CHANNELPOLICY_H
 #include "Common.h"
 #include <cstddef>
 #include <map>
@@ -31,4 +31,4 @@ namespace FMI::Utils {
 
 
 
-#endif //SMI_CHANNELPOLICY_H
+#endif //FMI_CHANNELPOLICY_H

@@ -1,5 +1,5 @@
-#ifndef SMI_PYTHONCOMMUNICATOR_H
-#define SMI_PYTHONCOMMUNICATOR_H
+#ifndef FMI_PYTHONCOMMUNICATOR_H
+#define FMI_PYTHONCOMMUNICATOR_H
 
 #include <Communicator.h>
 #include <memory>
@@ -153,4 +153,4 @@ namespace FMI::Utils {
 
 
 
-#endif //SMI_PYTHONCOMMUNICATOR_H
+#endif //FMI_PYTHONCOMMUNICATOR_H

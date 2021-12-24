@@ -1,5 +1,5 @@
-#ifndef SMI_S3_H
-#define SMI_S3_H
+#ifndef FMI_S3_H
+#define FMI_S3_H
 
 #include "ClientServer.h"
 #include <map>
@@ -45,4 +45,4 @@ namespace FMI::Comm {
 }
 
 
-#endif //SMI_S3_H
+#endif //FMI_S3_H

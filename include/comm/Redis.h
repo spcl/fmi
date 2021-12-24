@@ -1,5 +1,5 @@
-#ifndef SMI_REDIS_H
-#define SMI_REDIS_H
+#ifndef FMI_REDIS_H
+#define FMI_REDIS_H
 
 #include "ClientServer.h"
 #include <map>
@@ -40,4 +40,4 @@ namespace FMI::Comm {
     };
 }
 
-#endif //SMI_REDIS_H
+#endif //FMI_REDIS_H

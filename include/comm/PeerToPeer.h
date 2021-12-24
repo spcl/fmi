@@ -1,5 +1,5 @@
-#ifndef SMI_PEERTOPEER_H
-#define SMI_PEERTOPEER_H
+#ifndef FMI_PEERTOPEER_H
+#define FMI_PEERTOPEER_H
 
 #include "Channel.h"
 
@@ -86,4 +86,4 @@ namespace FMI::Comm {
 
 
 
-#endif //SMI_PEERTOPEER_H
+#endif //FMI_PEERTOPEER_H

@@ -1,5 +1,5 @@
-#ifndef SMI_FUNCTION_H
-#define SMI_FUNCTION_H
+#ifndef FMI_FUNCTION_H
+#define FMI_FUNCTION_H
 
 namespace FMI::Utils {
     //! Small wrapper around an arbitrary C++ binary function with signature T(T,T), i.e. accepting two arguments of type T and returning one of type T.
@@ -21,4 +21,4 @@ namespace FMI::Utils {
     };
 }
 
-#endif //SMI_FUNCTION_H
+#endif //FMI_FUNCTION_H

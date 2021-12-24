@@ -1,5 +1,5 @@
-#ifndef SMI_CONFIGURATION_H
-#define SMI_CONFIGURATION_H
+#ifndef FMI_CONFIGURATION_H
+#define FMI_CONFIGURATION_H
 
 
 #include <string>
@@ -8,7 +8,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 namespace FMI::Utils {
-    //! Configuration parser for the SMI JSON configuration file
+    //! Configuration parser for the FMI JSON configuration file
     class Configuration {
     public:
         explicit Configuration(const std::string& config_path);
@@ -26,4 +26,4 @@ namespace FMI::Utils {
 
 
 
-#endif //SMI_CONFIGURATION_H
+#endif //FMI_CONFIGURATION_H
