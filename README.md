@@ -39,8 +39,8 @@ make
 import fmi
 comm = fmi.Communicator(peer_id, num_peers, "config/fmi.json", "MyApp", 512);
 ```
-### Docker Container
-The Docker containers [FMI-build-docker](https://github.com/OpenCoreCH/FMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.
+### Docker Images
+The Docker images [FMI-build-docker](https://github.com/OpenCoreCH/FMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.
 
 ### AWS Lambda Layer
 For even easier deployment, we provide AWS CloudFormation templates to create Lambda layers in [python/aws](python/aws). Simply run `sam build` and `sam deploy --guided` in the folder corresponding to your Python version, which creates a Lambda layer in your account that can be added to your function. As soon as you added the layer, you can simply use `import fmi` and work with the library.
