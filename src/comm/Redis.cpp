@@ -1,5 +1,6 @@
 #include "../../include/comm/Redis.h"
 #include <boost/log/trivial.hpp>
+#include <cmath>
 
 FMI::Comm::Redis::Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) : ClientServer(params) {
     std::string hostname = params["host"];
@@ -71,7 +72,7 @@ std::vector<std::string> FMI::Comm::Redis::get_object_names() {
 double FMI::Comm::Redis::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double agg_bandwidth = std::min(producer * consumer * bandwidth_single, bandwidth_multiple);
     double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
-    return std::log2(producer + consumer) * overhead + trans_time;
+    return log2(producer + consumer) * overhead + trans_time;
 }
 
 double FMI::Comm::Redis::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {

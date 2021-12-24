@@ -25,10 +25,10 @@ target_include_directories(FMI PRIVATE ${Boost_INCLUDE_DIRS} ${TCPUNCH_INCLUDE_D
 
 target_link_libraries(FMI ${Boost_Libraries} Boost::log ${AWSSDK_LINK_LIBRARIES} ${HIREDIS_LIBRARIES} tcpunch)
 
-find_package(OpenMP REQUIRED)
+#find_package(OpenMP REQUIRED)
 
-add_executable(client tests/client.cpp)
+#add_executable(client tests/client.cpp)
 
-target_link_libraries(client FMI OpenMP::OpenMP_CXX)
+#target_link_libraries(client FMI OpenMP::OpenMP_CXX)
 
-add_subdirectory(tests)
+#add_subdirectory(tests)

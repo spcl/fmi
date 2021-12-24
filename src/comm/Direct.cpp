@@ -4,6 +4,7 @@
 #include <boost/log/trivial.hpp>
 #include <thread>
 #include <netinet/tcp.h>
+#include <cmath>
 
 FMI::Comm::Direct::Direct(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) {
     hostname = params["host"];
@@ -72,7 +73,7 @@ void FMI::Comm::Direct::check_socket(FMI::Utils::peer_num partner_id, std::strin
 double FMI::Comm::Direct::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double agg_bandwidth = bandwidth;
     double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
-    return std::log2(producer + consumer) * overhead + trans_time;
+    return log2(producer + consumer) * overhead + trans_time;
 }
 
 double FMI::Comm::Direct::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
