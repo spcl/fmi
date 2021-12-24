@@ -91,7 +91,7 @@ double SMI::Comm::S3::get_latency(Utils::peer_num producer, Utils::peer_num cons
     double comm_overhead = fixed_overhead + waiting_time;
     double agg_bandwidth = producer * consumer * bandwidth;
     double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
-    return comm_overhead + trans_time;
+    return std::log2(producer + consumer) * comm_overhead + trans_time;
 }
 
 double SMI::Comm::S3::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {

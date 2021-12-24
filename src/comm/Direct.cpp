@@ -68,7 +68,7 @@ void SMI::Comm::Direct::check_socket(SMI::Utils::peer_num partner_id, std::strin
 double SMI::Comm::Direct::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double agg_bandwidth = bandwidth;
     double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
-    return overhead + trans_time;
+    return std::log2(producer + consumer) * overhead + trans_time;
 }
 
 double SMI::Comm::Direct::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {

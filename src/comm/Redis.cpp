@@ -71,7 +71,7 @@ std::vector<std::string> SMI::Comm::Redis::get_object_names() {
 double SMI::Comm::Redis::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double agg_bandwidth = std::min(producer * consumer * bandwidth_single, bandwidth_multiple);
     double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
-    return overhead + trans_time;
+    return std::log2(producer + consumer) * overhead + trans_time;
 }
 
 double SMI::Comm::Redis::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
