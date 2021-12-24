@@ -1,6 +1,6 @@
 <img src="docs/fmi.svg" width="100%">
 
-# Serverless Message Interface
+# FaaS Message Interface
 
 ## Dependencies
 

@@ -1,4 +1,4 @@
-Serverless Message Interface      {#mainpage}
+FaaS Message Interface      {#mainpage}
 ============
 
 <img src="./fmi.svg" width="100%">
