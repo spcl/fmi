@@ -4,53 +4,53 @@
 #include <boost/python/extract.hpp>
 #include <iostream>
 
-SMI::Utils::PythonCommunicator::PythonCommunicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path,
+FMI::Utils::PythonCommunicator::PythonCommunicator(FMI::Utils::peer_num peer_id, FMI::Utils::peer_num num_peers, std::string config_path,
                                                    std::string comm_name, unsigned int faas_memory) {
-    comm = std::make_shared<SMI::Communicator>(peer_id, num_peers, config_path, comm_name, faas_memory);
+    comm = std::make_shared<FMI::Communicator>(peer_id, num_peers, config_path, comm_name, faas_memory);
     this->peer_id = peer_id;
     this->num_peers = num_peers;
 }
 
-void SMI::Utils::PythonCommunicator::send(const boost::python::object& py_obj, SMI::Utils::peer_num dst, SMI::Utils::PythonData type) {
+void FMI::Utils::PythonCommunicator::send(const boost::python::object& py_obj, FMI::Utils::peer_num dst, FMI::Utils::PythonData type) {
     if (type.type == INT) {
         auto val = extract_object<int>(py_obj);
-        SMI::Comm::Data<int> data = val;
+        FMI::Comm::Data<int> data = val;
         comm->send<int>(data, dst);
     } else if (type.type == DOUBLE) {
         auto val = extract_object<double>(py_obj);
-        SMI::Comm::Data<double> data = val;
+        FMI::Comm::Data<double> data = val;
         comm->send<double>(data, dst);
     } else if (type.type == INT_LIST) {
         auto val = extract_list<int>(py_obj);
-        SMI::Comm::Data<std::vector<int>> data = val;
+        FMI::Comm::Data<std::vector<int>> data = val;
         comm->send<std::vector<int>>(data, dst);
     } else if (type.type == DOUBLE_LIST) {
         auto val = extract_list<double>(py_obj);
-        SMI::Comm::Data<std::vector<double>> data = val;
+        FMI::Comm::Data<std::vector<double>> data = val;
         comm->send<std::vector<double>>(data, dst);
     } else {
         throw std::runtime_error("Unknown type passed");
     }
 }
 
-boost::python::object SMI::Utils::PythonCommunicator::recv(SMI::Utils::peer_num src, SMI::Utils::PythonData type) {
+boost::python::object FMI::Utils::PythonCommunicator::recv(FMI::Utils::peer_num src, FMI::Utils::PythonData type) {
     if (type.type == INT) {
-        SMI::Comm::Data<int> data;
+        FMI::Comm::Data<int> data;
         comm->recv<int>(data, src);
         boost::python::object res(data.get());
         return res;
     } else if (type.type == DOUBLE) {
-        SMI::Comm::Data<double> data;
+        FMI::Comm::Data<double> data;
         comm->recv<double>(data, src);
         boost::python::object res(data.get());
         return res;
     } else if (type.type == INT_LIST) {
-        SMI::Comm::Data<std::vector<int>> data(type.num_objects);
+        FMI::Comm::Data<std::vector<int>> data(type.num_objects);
         comm->recv<std::vector<int>>(data, src);
         boost::python::object res(to_list<int>(data.get()));
         return res;
     } else if (type.type == DOUBLE_LIST) {
-        SMI::Comm::Data<std::vector<double>> data(type.num_objects);
+        FMI::Comm::Data<std::vector<double>> data(type.num_objects);
         comm->recv<std::vector<double>>(data, src);
         boost::python::object res(to_list<double>(data.get()));
         return res;
@@ -59,9 +59,9 @@ boost::python::object SMI::Utils::PythonCommunicator::recv(SMI::Utils::peer_num 
     }
 }
 
-boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData type) {
+boost::python::object FMI::Utils::PythonCommunicator::bcast(const boost::python::object& src_data, FMI::Utils::peer_num root, FMI::Utils::PythonData type) {
     if (type.type == INT) {
-        SMI::Comm::Data<int> data;
+        FMI::Comm::Data<int> data;
         if (peer_id == root) {
             auto val = extract_object<int>(src_data);
             data = val;
@@ -69,7 +69,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
         comm->bcast<int>(data, root);
         return boost::python::object(data.get());
     } else if (type.type == DOUBLE) {
-        SMI::Comm::Data<double> data;
+        FMI::Comm::Data<double> data;
         if (peer_id == root) {
             auto val = extract_object<double>(src_data);
             data = val;
@@ -77,7 +77,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
         comm->bcast<double>(data, root);
         return boost::python::object(data.get());
     } else if (type.type == INT_LIST) {
-        SMI::Comm::Data<std::vector<int>> data(type.num_objects);
+        FMI::Comm::Data<std::vector<int>> data(type.num_objects);
         if (peer_id == root) {
             auto val = extract_list<int>(src_data);
             data = val;
@@ -85,7 +85,7 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
         comm->bcast<std::vector<int>>(data, root);
         return boost::python::object(to_list<int>(data.get()));
     } else if (type.type == DOUBLE_LIST) {
-        SMI::Comm::Data<std::vector<double>> data(type.num_objects);
+        FMI::Comm::Data<std::vector<double>> data(type.num_objects);
         if (peer_id == root) {
             auto val = extract_list<double>(src_data);
             data = val;
@@ -97,12 +97,12 @@ boost::python::object SMI::Utils::PythonCommunicator::bcast(const boost::python:
     }
 }
 
-void SMI::Utils::PythonCommunicator::barrier() {
+void FMI::Utils::PythonCommunicator::barrier() {
     comm->barrier();
 }
 
 boost::python::object
-SMI::Utils::PythonCommunicator::gather(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type) {
+FMI::Utils::PythonCommunicator::gather(const boost::python::object& src_data, FMI::Utils::peer_num root, FMI::Utils::PythonData snd_type) {
     if (snd_type.type == INT || snd_type.type == INT_LIST) {
         std::vector<int> val_list;
         if (snd_type.type == INT) {
@@ -112,10 +112,10 @@ SMI::Utils::PythonCommunicator::gather(const boost::python::object& src_data, SM
         } else if (snd_type.type == INT_LIST) {
             val_list = extract_list<int>(src_data);
         }
-        SMI::Comm::Data<std::vector<int>> senddata(val_list);
-        SMI::Comm::Data<std::vector<int>> rcvdata;
+        FMI::Comm::Data<std::vector<int>> senddata(val_list);
+        FMI::Comm::Data<std::vector<int>> rcvdata;
         if (peer_id == root) {
-            rcvdata = SMI::Comm::Data<std::vector<int>>(snd_type.num_objects * num_peers);
+            rcvdata = FMI::Comm::Data<std::vector<int>>(snd_type.num_objects * num_peers);
         }
         comm->gather<std::vector<int>>(senddata, rcvdata, root);
         return boost::python::object(to_list<int>(rcvdata.get()));
@@ -128,10 +128,10 @@ SMI::Utils::PythonCommunicator::gather(const boost::python::object& src_data, SM
         } else if (snd_type.type == DOUBLE_LIST) {
             val_list = extract_list<double>(src_data);
         }
-        SMI::Comm::Data<std::vector<double>> senddata(val_list);
-        SMI::Comm::Data<std::vector<double>> rcvdata;
+        FMI::Comm::Data<std::vector<double>> senddata(val_list);
+        FMI::Comm::Data<std::vector<double>> rcvdata;
         if (peer_id == root) {
-            rcvdata = SMI::Comm::Data<std::vector<double>>(snd_type.num_objects * num_peers);
+            rcvdata = FMI::Comm::Data<std::vector<double>>(snd_type.num_objects * num_peers);
         }
         comm->gather<std::vector<double>>(senddata, rcvdata, root);
         return boost::python::object(to_list<double>(rcvdata.get()));
@@ -141,15 +141,15 @@ SMI::Utils::PythonCommunicator::gather(const boost::python::object& src_data, SM
 }
 
 boost::python::object
-SMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonData snd_type) {
+FMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, FMI::Utils::peer_num root, FMI::Utils::PythonData snd_type) {
     if (snd_type.num_objects % num_peers != 0) {
         throw std::runtime_error("List length not divisible by number of peers");
     }
     if (snd_type.type == INT || snd_type.type == DOUBLE) {
         throw std::runtime_error("Cannot scatter atomic types");
     } else if (snd_type.type == INT_LIST) {
-        SMI::Comm::Data<std::vector<int>> recvdata(snd_type.num_objects / num_peers);
-        SMI::Comm::Data<std::vector<int>> senddata;
+        FMI::Comm::Data<std::vector<int>> recvdata(snd_type.num_objects / num_peers);
+        FMI::Comm::Data<std::vector<int>> senddata;
         if (peer_id == root) {
             auto val = extract_list<int>(src_data);
             senddata = val;
@@ -157,8 +157,8 @@ SMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, S
         comm->scatter<std::vector<int>>(senddata, recvdata, root);
         return boost::python::object(to_list<int>(recvdata.get()));
     } else if (snd_type.type == DOUBLE_LIST) {
-        SMI::Comm::Data<std::vector<double>> recvdata(snd_type.num_objects / num_peers);
-        SMI::Comm::Data<std::vector<double>> senddata;
+        FMI::Comm::Data<std::vector<double>> recvdata(snd_type.num_objects / num_peers);
+        FMI::Comm::Data<std::vector<double>> senddata;
         if (peer_id == root) {
             auto val = extract_list<double>(src_data);
             senddata = val;
@@ -171,33 +171,33 @@ SMI::Utils::PythonCommunicator::scatter(const boost::python::object& src_data, S
 }
 
 boost::python::object
-SMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, SMI::Utils::peer_num root, SMI::Utils::PythonFunc f,
-                                       SMI::Utils::PythonData type) {
+FMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, FMI::Utils::peer_num root, FMI::Utils::PythonFunc f,
+                                       FMI::Utils::PythonData type) {
     if (type.type == INT) {
         auto val = extract_object<int>(src_data);
-        SMI::Comm::Data<int> sendbuf(val);
-        SMI::Comm::Data<int> recvbuf;
+        FMI::Comm::Data<int> sendbuf(val);
+        FMI::Comm::Data<int> recvbuf;
         auto func = get_function<int>(f);
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(recvbuf.get());
     } else if (type.type == DOUBLE) {
         auto val = extract_object<double>(src_data);
-        SMI::Comm::Data<double> sendbuf(val);
-        SMI::Comm::Data<double> recvbuf;
+        FMI::Comm::Data<double> sendbuf(val);
+        FMI::Comm::Data<double> recvbuf;
         auto func = get_function<double>(f);
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(recvbuf.get());
     } else if (type.type == INT_LIST) {
         auto val = extract_list<int>(src_data);
-        SMI::Comm::Data<std::vector<int>> sendbuf(val);
-        SMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
+        FMI::Comm::Data<std::vector<int>> sendbuf(val);
+        FMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
         auto func = get_vec_function<int>(f);
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(to_list<int>(recvbuf.get()));
     } else if (type.type == DOUBLE_LIST) {
         auto val = extract_list<double>(src_data);
-        SMI::Comm::Data<std::vector<double>> sendbuf(val);
-        SMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
+        FMI::Comm::Data<std::vector<double>> sendbuf(val);
+        FMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
         auto func = get_vec_function<double>(f);
         comm->reduce(sendbuf, recvbuf, root, func);
         return boost::python::object(to_list<double>(recvbuf.get()));
@@ -208,32 +208,32 @@ SMI::Utils::PythonCommunicator::reduce(const boost::python::object& src_data, SM
 }
 
 boost::python::object
-SMI::Utils::PythonCommunicator::allreduce(const boost::python::object& src_data, SMI::Utils::PythonFunc f, SMI::Utils::PythonData type) {
+FMI::Utils::PythonCommunicator::allreduce(const boost::python::object& src_data, FMI::Utils::PythonFunc f, FMI::Utils::PythonData type) {
     if (type.type == INT) {
         auto val = extract_object<int>(src_data);
-        SMI::Comm::Data<int> sendbuf(val);
-        SMI::Comm::Data<int> recvbuf;
+        FMI::Comm::Data<int> sendbuf(val);
+        FMI::Comm::Data<int> recvbuf;
         auto func = get_function<int>(f);
         comm->allreduce(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
     } else if (type.type == DOUBLE) {
         auto val = extract_object<double>(src_data);
-        SMI::Comm::Data<double> sendbuf(val);
-        SMI::Comm::Data<double> recvbuf;
+        FMI::Comm::Data<double> sendbuf(val);
+        FMI::Comm::Data<double> recvbuf;
         auto func = get_function<double>(f);
         comm->allreduce(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
     } else if (type.type == INT_LIST) {
         auto val = extract_list<int>(src_data);
-        SMI::Comm::Data<std::vector<int>> sendbuf(val);
-        SMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
+        FMI::Comm::Data<std::vector<int>> sendbuf(val);
+        FMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
         auto func = get_vec_function<int>(f);
         comm->allreduce(sendbuf, recvbuf, func);
         return boost::python::object(to_list<int>(recvbuf.get()));
     } else if (type.type == DOUBLE_LIST) {
         auto val = extract_list<double>(src_data);
-        SMI::Comm::Data<std::vector<double>> sendbuf(val);
-        SMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
+        FMI::Comm::Data<std::vector<double>> sendbuf(val);
+        FMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
         auto func = get_vec_function<double>(f);
         comm->allreduce(sendbuf, recvbuf, func);
         return boost::python::object(to_list<double>(recvbuf.get()));
@@ -243,32 +243,32 @@ SMI::Utils::PythonCommunicator::allreduce(const boost::python::object& src_data,
 }
 
 boost::python::object
-SMI::Utils::PythonCommunicator::scan(const boost::python::object& src_data, SMI::Utils::PythonFunc f, SMI::Utils::PythonData type) {
+FMI::Utils::PythonCommunicator::scan(const boost::python::object& src_data, FMI::Utils::PythonFunc f, FMI::Utils::PythonData type) {
     if (type.type == INT) {
         auto val = extract_object<int>(src_data);
-        SMI::Comm::Data<int> sendbuf(val);
-        SMI::Comm::Data<int> recvbuf;
+        FMI::Comm::Data<int> sendbuf(val);
+        FMI::Comm::Data<int> recvbuf;
         auto func = get_function<int>(f);
         comm->scan(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
     } else if (type.type == DOUBLE) {
         auto val = extract_object<double>(src_data);
-        SMI::Comm::Data<double> sendbuf(val);
-        SMI::Comm::Data<double> recvbuf;
+        FMI::Comm::Data<double> sendbuf(val);
+        FMI::Comm::Data<double> recvbuf;
         auto func = get_function<double>(f);
         comm->scan(sendbuf, recvbuf, func);
         return boost::python::object(recvbuf.get());
     } else if (type.type == INT_LIST) {
         auto val = extract_list<int>(src_data);
-        SMI::Comm::Data<std::vector<int>> sendbuf(val);
-        SMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
+        FMI::Comm::Data<std::vector<int>> sendbuf(val);
+        FMI::Comm::Data<std::vector<int>> recvbuf(type.num_objects);
         auto func = get_vec_function<int>(f);
         comm->scan(sendbuf, recvbuf, func);
         return boost::python::object(to_list<int>(recvbuf.get()));
     } else if (type.type == DOUBLE_LIST) {
         auto val = extract_list<double>(src_data);
-        SMI::Comm::Data<std::vector<double>> sendbuf(val);
-        SMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
+        FMI::Comm::Data<std::vector<double>> sendbuf(val);
+        FMI::Comm::Data<std::vector<double>> recvbuf(type.num_objects);
         auto func = get_vec_function<double>(f);
         comm->scan(sendbuf, recvbuf, func);
         return boost::python::object(to_list<double>(recvbuf.get()));
@@ -277,6 +277,6 @@ SMI::Utils::PythonCommunicator::scan(const boost::python::object& src_data, SMI:
     }
 }
 
-void SMI::Utils::PythonCommunicator::hint(SMI::Utils::Hint hint) {
+void FMI::Utils::PythonCommunicator::hint(FMI::Utils::Hint hint) {
     comm->hint(hint);
 }

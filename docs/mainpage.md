@@ -8,20 +8,20 @@ Serverless Message Interface      {#mainpage}
 ```cpp
 #include <smi.h>
 ...
-SMI::Communicator comm(peer_id, 3, config_path, comm_name);
-SMI::Comm::Data<double> d;
-SMI::Comm::Data<std::vector<int>> vec({0, 1, 2});
+FMI::Communicator comm(peer_id, 3, config_path, comm_name);
+FMI::Comm::Data<double> d;
+FMI::Comm::Data<std::vector<int>> vec({0, 1, 2});
 if (peer_id == 0) {
     d = 42.0;
 }
-SMI::Comm::Data<std::vector<int>> recv(1);
+FMI::Comm::Data<std::vector<int>> recv(1);
 comm.bcast(d, 0);
 comm.scatter(vec, recv, 0);
 assert(d == 42.0);
 assert(recv.get()[0] == peer_id);
-SMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true, true);
-SMI::Comm::Data<int> id = peer_id;
-SMI::Comm::Data<int> id_sum;
+FMI::Utils::Function<int> f([] (int a, int b) {return a + b;}, true, true);
+FMI::Comm::Data<int> id = peer_id;
+FMI::Comm::Data<int> id_sum;
 comm.allreduce(id, id_sum, f);
 assert(id_sum == 3);
 ```

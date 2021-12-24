@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cmath>
 
-void SMI::Comm::ClientServer::send(channel_data buf, SMI::Utils::peer_num dest) {
+void FMI::Comm::ClientServer::send(channel_data buf, FMI::Utils::peer_num dest) {
     auto num_operation_entry = num_operations.find("send" + std::to_string(dest));
     unsigned int operation_num;
     if (num_operation_entry == num_operations.end()) {
@@ -17,7 +17,7 @@ void SMI::Comm::ClientServer::send(channel_data buf, SMI::Utils::peer_num dest) 
     upload(buf, file_name);
 }
 
-void SMI::Comm::ClientServer::recv(channel_data buf, SMI::Utils::peer_num dest) {
+void FMI::Comm::ClientServer::recv(channel_data buf, FMI::Utils::peer_num dest) {
     auto num_operation_entry = num_operations.find("recv" + std::to_string(dest));
     unsigned int operation_num;
     if (num_operation_entry == num_operations.end()) {
@@ -31,7 +31,7 @@ void SMI::Comm::ClientServer::recv(channel_data buf, SMI::Utils::peer_num dest) 
     download(buf, file_name);
 }
 
-void SMI::Comm::ClientServer::bcast(channel_data buf, SMI::Utils::peer_num root) {
+void FMI::Comm::ClientServer::bcast(channel_data buf, FMI::Utils::peer_num root) {
     std::string file_name = comm_name + std::to_string(root) + "_bcast_" + std::to_string(num_operations["bcast"]);
     num_operations["bcast"]++;
     if (peer_id == root) {
@@ -41,7 +41,7 @@ void SMI::Comm::ClientServer::bcast(channel_data buf, SMI::Utils::peer_num root)
     }
 }
 
-void SMI::Comm::ClientServer::barrier() {
+void FMI::Comm::ClientServer::barrier() {
     auto barrier_num = num_operations["barrier"];
     std::string barrier_suffix = "_barrier_" + std::to_string(barrier_num);
     std::string file_name = comm_name + std::to_string(peer_id) + barrier_suffix;
@@ -64,13 +64,13 @@ void SMI::Comm::ClientServer::barrier() {
     throw Utils::Timeout();
 }
 
-void SMI::Comm::ClientServer::finalize() {
+void FMI::Comm::ClientServer::finalize() {
     for (const auto& object_name : created_objects) {
         delete_object(object_name);
     }
 }
 
-void SMI::Comm::ClientServer::download(channel_data buf, std::string name) {
+void FMI::Comm::ClientServer::download(channel_data buf, std::string name) {
     unsigned int elapsed_time = 0;
     while (elapsed_time < max_timeout) {
         bool success = download_object(buf, name);
@@ -84,12 +84,12 @@ void SMI::Comm::ClientServer::download(channel_data buf, std::string name) {
     throw Utils::Timeout();
 }
 
-void SMI::Comm::ClientServer::upload(channel_data buf, std::string name) {
+void FMI::Comm::ClientServer::upload(channel_data buf, std::string name) {
     created_objects.push_back(name);
     upload_object(buf, name);
 }
 
-void SMI::Comm::ClientServer::reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) {
+void FMI::Comm::ClientServer::reduce(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root, raw_function f) {
     if (peer_id == root) {
         bool left_to_right = !(f.commutative && f.associative);
         std::vector<bool> received(num_peers, false);
@@ -136,7 +136,7 @@ void SMI::Comm::ClientServer::reduce(channel_data sendbuf, channel_data recvbuf,
     }
 }
 
-void SMI::Comm::ClientServer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+void FMI::Comm::ClientServer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
     if (peer_id != num_peers - 1) {
         std::string file_name = comm_name + std::to_string(peer_id) + "_scan_" + std::to_string(num_operations["scan"]);
         upload(sendbuf, file_name);
@@ -182,12 +182,12 @@ void SMI::Comm::ClientServer::scan(channel_data sendbuf, channel_data recvbuf, r
     num_operations["scan"]++;
 }
 
-SMI::Comm::ClientServer::ClientServer(std::map<std::string, std::string> params) {
+FMI::Comm::ClientServer::ClientServer(std::map<std::string, std::string> params) {
     timeout = std::stoi(params["timeout"]);
     max_timeout = std::stoi(params["max_timeout"]);
 }
 
-double SMI::Comm::ClientServer::get_operation_latency(SMI::Utils::OperationInfo op_info) {
+double FMI::Comm::ClientServer::get_operation_latency(FMI::Utils::OperationInfo op_info) {
     std::size_t size_in_bytes = op_info.data_size;
     switch (op_info.op) {
         case Utils::send:
@@ -219,7 +219,7 @@ double SMI::Comm::ClientServer::get_operation_latency(SMI::Utils::OperationInfo 
     throw std::runtime_error("Operation not implemented");
 }
 
-double SMI::Comm::ClientServer::get_operation_price(SMI::Utils::OperationInfo op_info) {
+double FMI::Comm::ClientServer::get_operation_price(FMI::Utils::OperationInfo op_info) {
     std::size_t size_in_bytes = op_info.data_size;
     switch (op_info.op) {
         case Utils::send:

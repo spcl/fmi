@@ -25,12 +25,10 @@ target_include_directories(SMI PRIVATE ${Boost_INCLUDE_DIRS} ${TCPUNCH_INCLUDE_D
 
 target_link_libraries(SMI ${Boost_Libraries} Boost::log ${AWSSDK_LINK_LIBRARIES} ${HIREDIS_LIBRARIES} tcpunch)
 
-if (NOT hasParent)
-    find_package(OpenMP REQUIRED)
+find_package(OpenMP REQUIRED)
 
-    add_executable(client tests/client.cpp)
+add_executable(client tests/client.cpp)
 
-    target_link_libraries(client SMI OpenMP::OpenMP_CXX)
+target_link_libraries(client SMI OpenMP::OpenMP_CXX)
 
-    add_subdirectory(tests)
-endif()
+add_subdirectory(tests)

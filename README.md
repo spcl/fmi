@@ -13,16 +13,16 @@
 - Clone this repository
 - Add to your CMakeLists.txt:
 ```cmake
-add_subdirectory(path_to_repo/SMI/)
+add_subdirectory(path_to_repo/FMI/)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE SMI)
+target_link_libraries(${PROJECT_NAME} PRIVATE FMI)
 target_include_directories(${PROJECT_NAME} PRIVATE ${SMI_INCLUDE_DIRS})
 ```
 - Integrate the library into your project:
 ```cpp
 #include <Communicator.h>
 ...
-SMI::Communicator comm(peer_id, num_peers, "config/smi.json", "MyApp", 512);
+FMI::Communicator comm(peer_id, num_peers, "config/smi.json", "MyApp", 512);
 ```
 
 ## Installation (Python)
@@ -40,7 +40,7 @@ import smi
 comm = smi.Communicator(peer_id, num_peers, "config/smi.json", "MyApp", 512);
 ```
 ### Docker Container
-The Docker containers [SMI-build-docker](https://github.com/OpenCoreCH/SMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.
+The Docker containers [FMI-build-docker](https://github.com/OpenCoreCH/FMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.
 
 ## Examples
 C++ sample code for the library is available at [tests/communicator.cpp](tests/communicator.cpp), the usage from Python is demonstrated in [python/tests/client.py](python/tests/client.py). 

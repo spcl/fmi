@@ -57,26 +57,26 @@ std::map<std::string, std::string> direct_test_model_params = {
 };
 
 int main() {
-    auto ch_s3 = SMI::Comm::Channel::get_channel("S3", s3_test_params, s3_test_model_params);
+    auto ch_s3 = FMI::Comm::Channel::get_channel("S3", s3_test_params, s3_test_model_params);
     std::cout << ch_s3->get_price(1, 1, 1) << std::endl;
     std::cout << ch_s3->get_latency(1, 1, 1) << std::endl;
 
-    auto ch_redis = SMI::Comm::Channel::get_channel("Redis", redis_test_params, redis_test_model_params);
+    auto ch_redis = FMI::Comm::Channel::get_channel("Redis", redis_test_params, redis_test_model_params);
     std::cout << ch_redis->get_price(1, 1, 1) << std::endl;
     std::cout << ch_redis->get_latency(1, 1, 1) << std::endl;
 
-    auto ch_direct = SMI::Comm::Channel::get_channel("Direct", direct_test_params, direct_test_model_params);
+    auto ch_direct = FMI::Comm::Channel::get_channel("Direct", direct_test_params, direct_test_model_params);
     std::cout << ch_direct->get_price(1, 1, 1) << std::endl;
     std::cout << ch_direct->get_latency(1, 1, 1) << std::endl;
 
     exit(0);
 
-    SMI::Comm::Data<int> d = 1;
+    FMI::Comm::Data<int> d = 1;
     //std::cout << d << std::endl;
-    SMI::Comm::Data<std::vector<int>> d1({1, 2, 3});
+    FMI::Comm::Data<std::vector<int>> d1({1, 2, 3});
     char data[5];
     char rcv[5];
     data[0] = '1';
-    SMI::Comm::Data<void*> d2(data, 5);
+    FMI::Comm::Data<void*> d2(data, 5);
 
 }

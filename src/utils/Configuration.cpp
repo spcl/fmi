@@ -3,7 +3,7 @@
 #include <iostream>
 #include <utility>
 
-namespace SMI::Utils {
+namespace FMI::Utils {
 
     Configuration::Configuration(const std::string& config_path) {
         boost::property_tree::read_json(config_path, root);

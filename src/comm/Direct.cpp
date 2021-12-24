@@ -5,7 +5,7 @@
 #include <thread>
 #include <netinet/tcp.h>
 
-SMI::Comm::Direct::Direct(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) {
+FMI::Comm::Direct::Direct(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) {
     hostname = params["host"];
     port = std::stoi(params["port"]);
     max_timeout = std::stoi(params["max_timeout"]);
@@ -21,7 +21,7 @@ SMI::Comm::Direct::Direct(std::map<std::string, std::string> params, std::map<st
     }
 }
 
-void SMI::Comm::Direct::send_object(channel_data buf, Utils::peer_num rcpt_id) {
+void FMI::Comm::Direct::send_object(channel_data buf, Utils::peer_num rcpt_id) {
     check_socket(rcpt_id, comm_name + std::to_string(peer_id) + "_" + std::to_string(rcpt_id));
     long sent = ::send(sockets[rcpt_id], buf.buf, buf.len, 0);
     if (sent == -1) {
@@ -32,7 +32,7 @@ void SMI::Comm::Direct::send_object(channel_data buf, Utils::peer_num rcpt_id) {
     }
 }
 
-void SMI::Comm::Direct::recv_object(channel_data buf, Utils::peer_num sender_id) {
+void FMI::Comm::Direct::recv_object(channel_data buf, Utils::peer_num sender_id) {
     check_socket(sender_id, comm_name + std::to_string(sender_id) + "_" + std::to_string(peer_id));
     long received = ::recv(sockets[sender_id], buf.buf, buf.len, MSG_WAITALL);
     if (received == -1 || received < buf.len) {
@@ -43,7 +43,7 @@ void SMI::Comm::Direct::recv_object(channel_data buf, Utils::peer_num sender_id)
     }
 }
 
-void SMI::Comm::Direct::check_socket(SMI::Utils::peer_num partner_id, std::string pair_name) {
+void FMI::Comm::Direct::check_socket(FMI::Utils::peer_num partner_id, std::string pair_name) {
     if (sockets.empty()) {
         sockets = std::vector<int>(num_peers, -1);
     }
@@ -69,13 +69,13 @@ void SMI::Comm::Direct::check_socket(SMI::Utils::peer_num partner_id, std::strin
     }
 }
 
-double SMI::Comm::Direct::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+double FMI::Comm::Direct::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double agg_bandwidth = bandwidth;
     double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
     return std::log2(producer + consumer) * overhead + trans_time;
 }
 
-double SMI::Comm::Direct::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+double FMI::Comm::Direct::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double transfer_costs = 2 * consumer * producer * ((double) size_in_bytes / 1000000000.) * transfer_price;
     double total_costs = transfer_costs;
     if (include_infrastructure_costs) {

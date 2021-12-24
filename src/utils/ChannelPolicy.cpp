@@ -3,10 +3,10 @@
 
 #include <utility>
 
-SMI::Utils::ChannelPolicy::ChannelPolicy(std::map<std::string, std::shared_ptr<SMI::Comm::Channel>>& channels, peer_num num_peers,
+FMI::Utils::ChannelPolicy::ChannelPolicy(std::map<std::string, std::shared_ptr<FMI::Comm::Channel>>& channels, peer_num num_peers,
                                          double faas_price, Hint hint) : channels(channels), num_peers(num_peers), faas_price(faas_price), hint(hint) {}
 
-std::string SMI::Utils::ChannelPolicy::get_channel(OperationInfo op_info) {
+std::string FMI::Utils::ChannelPolicy::get_channel(OperationInfo op_info) {
     std::map<std::string, double> times;
     std::map<std::string, double> prices;
     for (const auto& [channel_name, channel] : channels) {
@@ -28,10 +28,10 @@ std::string SMI::Utils::ChannelPolicy::get_channel(OperationInfo op_info) {
     }
 }
 
-double SMI::Utils::ChannelPolicy::get_faas_price(double execution_time) {
+double FMI::Utils::ChannelPolicy::get_faas_price(double execution_time) {
     return execution_time * faas_price;
 }
 
-void SMI::Utils::ChannelPolicy::set_hint(SMI::Utils::Hint hint) {
+void FMI::Utils::ChannelPolicy::set_hint(FMI::Utils::Hint hint) {
     this->hint = hint;
 }

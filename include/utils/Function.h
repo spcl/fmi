@@ -1,7 +1,7 @@
 #ifndef SMI_FUNCTION_H
 #define SMI_FUNCTION_H
 
-namespace SMI::Utils {
+namespace FMI::Utils {
     //! Small wrapper around an arbitrary C++ binary function with signature T(T,T), i.e. accepting two arguments of type T and returning one of type T.
     template<typename T>
     class Function {

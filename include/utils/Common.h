@@ -3,7 +3,7 @@
 #include <exception>
 
 //! Contains various utilities that are used in SMI
-namespace SMI::Utils {
+namespace FMI::Utils {
     //! Type for peer IDs / numbers
     using peer_num = unsigned int;
 

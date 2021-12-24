@@ -1,8 +1,8 @@
 #include "../include/Communicator.h"
 
 #include <utility>
-namespace SMI {
-    Communicator::Communicator(SMI::Utils::peer_num peer_id, SMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name,
+namespace FMI {
+    Communicator::Communicator(FMI::Utils::peer_num peer_id, FMI::Utils::peer_num num_peers, std::string config_path, std::string comm_name,
                                unsigned int faas_memory) {
         Utils::Configuration config(config_path);
         this->peer_id = peer_id;
@@ -18,10 +18,10 @@ namespace SMI {
         }
         double gib_second_price = config.get_faas_price();
         double faas_price = (double) faas_memory / 1024. * gib_second_price;
-        set_channel_policy(std::make_shared<SMI::Utils::ChannelPolicy>(channels, num_peers, faas_price, channel_hint));
+        set_channel_policy(std::make_shared<FMI::Utils::ChannelPolicy>(channels, num_peers, faas_price, channel_hint));
     }
 
-    void Communicator::register_channel(std::string name, std::shared_ptr<SMI::Comm::Channel> c) {
+    void Communicator::register_channel(std::string name, std::shared_ptr<FMI::Comm::Channel> c) {
         c->set_peer_id(peer_id);
         c->set_num_peers(num_peers);
         c->set_comm_name(comm_name);
@@ -34,11 +34,11 @@ namespace SMI {
         }
     }
 
-    void Communicator::set_channel_policy(std::shared_ptr<SMI::Utils::ChannelPolicy> policy) {
+    void Communicator::set_channel_policy(std::shared_ptr<FMI::Utils::ChannelPolicy> policy) {
         this->policy = std::move(policy);
     }
 
-    void Communicator::hint(SMI::Utils::Hint hint) {
+    void Communicator::hint(FMI::Utils::Hint hint) {
         this->channel_hint = hint;
         policy->set_hint(hint);
     }

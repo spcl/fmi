@@ -8,7 +8,7 @@
 
 char TAG[] = "S3Client";
 
-SMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) : ClientServer(params) {
+FMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) : ClientServer(params) {
     if (instances == 0) {
         // Only one call allowed (https://github.com/aws/aws-sdk-cpp/issues/456), give possible multiple clients control over initialization
         Aws::InitAPI(options);
@@ -27,14 +27,14 @@ SMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::strin
     client = Aws::MakeUnique<Aws::S3::S3Client>(TAG, credentialsProvider, config);
 }
 
-SMI::Comm::S3::~S3() {
+FMI::Comm::S3::~S3() {
     instances--;
     if (instances == 0) {
         Aws::ShutdownAPI(options);
     }
 }
 
-bool SMI::Comm::S3::download_object(channel_data buf, std::string name) {
+bool FMI::Comm::S3::download_object(channel_data buf, std::string name) {
     Aws::S3::Model::GetObjectRequest request;
     request.WithBucket(bucket_name).WithKey(name);
     auto outcome = client->GetObject(request);
@@ -47,7 +47,7 @@ bool SMI::Comm::S3::download_object(channel_data buf, std::string name) {
     }
 }
 
-void SMI::Comm::S3::upload_object(channel_data buf, std::string name) {
+void FMI::Comm::S3::upload_object(channel_data buf, std::string name) {
     Aws::S3::Model::PutObjectRequest request;
     request.WithBucket(bucket_name).WithKey(name);
 
@@ -60,7 +60,7 @@ void SMI::Comm::S3::upload_object(channel_data buf, std::string name) {
     }
 }
 
-void SMI::Comm::S3::delete_object(std::string name) {
+void FMI::Comm::S3::delete_object(std::string name) {
     Aws::S3::Model::DeleteObjectRequest request;
     request.WithBucket(bucket_name).WithKey(name);
     auto outcome = client->DeleteObject(request);
@@ -69,7 +69,7 @@ void SMI::Comm::S3::delete_object(std::string name) {
     }
 }
 
-std::vector<std::string> SMI::Comm::S3::get_object_names() {
+std::vector<std::string> FMI::Comm::S3::get_object_names() {
     std::vector<std::string> object_names;
     Aws::S3::Model::ListObjectsRequest request;
     request.WithBucket(bucket_name);
@@ -85,7 +85,7 @@ std::vector<std::string> SMI::Comm::S3::get_object_names() {
     return object_names;
 }
 
-double SMI::Comm::S3::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+double FMI::Comm::S3::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double fixed_overhead = overhead;
     double waiting_time = (double) timeout / 2.;
     double comm_overhead = fixed_overhead + waiting_time;
@@ -94,7 +94,7 @@ double SMI::Comm::S3::get_latency(Utils::peer_num producer, Utils::peer_num cons
     return std::log2(producer + consumer) * comm_overhead + trans_time;
 }
 
-double SMI::Comm::S3::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+double FMI::Comm::S3::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double upload_costs = producer * upload_price + producer * ((double) size_in_bytes / 1000000000.) * transfer_price;
     double expected_polls = (max_timeout / timeout) / 2;
     double download_costs = producer * consumer * expected_polls * download_price + producer * consumer * ((double) size_in_bytes / 1000000000.) * transfer_price;

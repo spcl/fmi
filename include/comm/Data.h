@@ -6,7 +6,7 @@
 #include <ostream>
 #include <functional>
 
-namespace SMI::Comm {
+namespace FMI::Comm {
     //! Small data wrapper around a generic type T with some helper utilities
     template<typename T>
     class Data {

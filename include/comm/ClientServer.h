@@ -5,7 +5,7 @@
 #include <map>
 #include "../utils/Common.h"
 
-namespace SMI::Comm {
+namespace FMI::Comm {
     //! Client-Server channel type
     /*!
      * This class provides optimized collectives for client-server channels and defines the interface that these channels need to implement.
@@ -15,19 +15,19 @@ namespace SMI::Comm {
         explicit ClientServer(std::map<std::string, std::string> params);
 
         //! Constructs file / key name based on sender and recipient and then uploads the data.
-        void send(channel_data buf, SMI::Utils::peer_num dest) override;
+        void send(channel_data buf, FMI::Utils::peer_num dest) override;
 
         //! Waits until the object with the expected file / key name appears (or a timeout occurs), then downloads it.
-        void recv(channel_data buf, SMI::Utils::peer_num dest) override;
+        void recv(channel_data buf, FMI::Utils::peer_num dest) override;
 
         //! Root uploads its data, all other peers download the object
-        void bcast(channel_data buf, SMI::Utils::peer_num root) override;
+        void bcast(channel_data buf, FMI::Utils::peer_num root) override;
 
         //! All peers upload a 1 byte file and wait until num_peers files (associated to this operation based on the file name) exist
         void barrier() override;
 
         //! All peers upload their data. The root peer downloads these objects and applies the function (as soon as objects become available for associative / commutative functions, left-to-right otherwise)
-        void reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) override;
+        void reduce(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root, raw_function f) override;
 
         //! All peers upload their data and download the needed files to apply the function. Left-to-right evaluation order is enforced for non-commutative / non-associative functions.
         void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) override;

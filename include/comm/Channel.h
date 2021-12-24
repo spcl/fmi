@@ -34,18 +34,18 @@ struct channel_data {
 
 
 
-namespace SMI::Comm {
+namespace FMI::Comm {
     //! Interface that defines channel operations. Only provides a few default implementations, the rest is implemented in the specific ClientServer or PeerToPeer channel types.
     class Channel {
     public:
         //! Send data to peer with id dest, must match a recv call
-        virtual void send(channel_data buf, SMI::Utils::peer_num dest) = 0;
+        virtual void send(channel_data buf, FMI::Utils::peer_num dest) = 0;
 
         //! Receive data from peer with id src, must match a send call
-        virtual void recv(channel_data buf, SMI::Utils::peer_num src) = 0;
+        virtual void recv(channel_data buf, FMI::Utils::peer_num src) = 0;
 
         //! Broadcast data. Buf only needs to contain useful data for root, the buffer is overwritten for all other peers
-        virtual void bcast(channel_data buf, SMI::Utils::peer_num root) = 0;
+        virtual void bcast(channel_data buf, FMI::Utils::peer_num root) = 0;
 
         //! Barrier synchronization collective.
         virtual void barrier() = 0;
@@ -56,7 +56,7 @@ namespace SMI::Comm {
          * @param sendbuf Data that is sent to the root
          * @param recvbuf Buffer to receive data in, only relevant for root. Needs to have a size of (at least) num_peers * sendbuf.size
          */
-        virtual void gather(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root);
+        virtual void gather(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root);
 
         //! Scatter data from root to all peers
         /*!
@@ -64,7 +64,7 @@ namespace SMI::Comm {
          * @param sendbuf Only relevant for root, contains the data that is scattered and needs to have a (divisible) size of num_peers * recvbuf.size
          * @param recvbuf Buffer to receive the data (of size sendbuf.size / num_peers), needs to be set by all peers
          */
-        virtual void scatter(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root);
+        virtual void scatter(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root);
 
         //! Apply function f to sendbuf of all peers.
         /*!
@@ -74,7 +74,7 @@ namespace SMI::Comm {
          * @param recvbuf Only relevant for root. Needs to have the same size as sendbuf
          * @param f Associativity / Commutativity of f controls choice of algorithm, depending on the channel / channel type
          */
-        virtual void reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) = 0;
+        virtual void reduce(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root, raw_function f) = 0;
 
         //! Apply function f to sendbuf of all peers, make result available to everyone.
         /*!
@@ -90,10 +90,10 @@ namespace SMI::Comm {
         virtual void scan(channel_data sendbuf, channel_data recvbuf, raw_function f) = 0;
 
         //! Helper utility to set peer id, ID needs to be set before first collective operation
-        void set_peer_id(SMI::Utils::peer_num num) { peer_id = num; }
+        void set_peer_id(FMI::Utils::peer_num num) { peer_id = num; }
 
         //! Helper utility to set number of peers, needs to be set before first collective operation
-        void set_num_peers(SMI::Utils::peer_num num) { num_peers = num; }
+        void set_num_peers(FMI::Utils::peer_num num) { num_peers = num; }
 
         //! Helper utility to set the communicator name, should be set before first collective operation to avoid conflicts with empty communicator name.
         void set_comm_name(std::string communication_name) {comm_name = communication_name; }
@@ -124,8 +124,8 @@ namespace SMI::Comm {
         virtual double get_operation_price(Utils::OperationInfo op_info) = 0;
 
     protected:
-        SMI::Utils::peer_num peer_id;
-        SMI::Utils::peer_num num_peers;
+        FMI::Utils::peer_num peer_id;
+        FMI::Utils::peer_num num_peers;
         //! Can optionally be used by channels to avoid resource conflicts that may occur because of multiple concurrent communicators.
         /*!
          * For instance, the communicator name can be used as a prefix for key or file names.

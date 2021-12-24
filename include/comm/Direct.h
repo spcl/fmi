@@ -3,7 +3,7 @@
 
 #include "PeerToPeer.h"
 
-namespace SMI::Comm {
+namespace FMI::Comm {
     //! Channel that uses the TCPunch TCP NAT Hole Punching Library for connection establishment.
     class Direct : public PeerToPeer {
     public:

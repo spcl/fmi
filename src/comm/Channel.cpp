@@ -3,7 +3,7 @@
 #include "../../include/comm/Redis.h"
 #include "../../include/comm/Direct.h"
 
-std::shared_ptr<SMI::Comm::Channel> SMI::Comm::Channel::get_channel(std::string name, std::map<std::string, std::string> params,
+std::shared_ptr<FMI::Comm::Channel> FMI::Comm::Channel::get_channel(std::string name, std::map<std::string, std::string> params,
                                                                     std::map<std::string, std::string> model_params) {
     if (name == "S3") {
         return std::make_shared<S3>(params, model_params);
@@ -16,7 +16,7 @@ std::shared_ptr<SMI::Comm::Channel> SMI::Comm::Channel::get_channel(std::string 
     }
 }
 
-void SMI::Comm::Channel::gather(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root) {
+void FMI::Comm::Channel::gather(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root) {
     if (peer_id != root) {
         send(sendbuf, root);
     } else {
@@ -32,7 +32,7 @@ void SMI::Comm::Channel::gather(channel_data sendbuf, channel_data recvbuf, SMI:
     }
 }
 
-void SMI::Comm::Channel::scatter(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root) {
+void FMI::Comm::Channel::scatter(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root) {
     if (peer_id == root) {
         auto buffer_length = recvbuf.len;
         for (int i = 0; i < num_peers; i++) {
@@ -48,7 +48,7 @@ void SMI::Comm::Channel::scatter(channel_data sendbuf, channel_data recvbuf, SMI
     }
 }
 
-void SMI::Comm::Channel::allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+void FMI::Comm::Channel::allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) {
     reduce(sendbuf, recvbuf, 0, f);
     bcast(recvbuf, 0);
 }

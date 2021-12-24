@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(sending_receiving) {
         #pragma omp parallel num_threads(2)
         {
             int tid = omp_get_thread_num();
-            auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+            auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
             ch->set_peer_id(tid);
             ch->set_num_peers(2);
             ch->set_comm_name(comm_name);
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(sending_receiving_mult_times) {
         #pragma omp parallel num_threads(2)
         {
             int tid = omp_get_thread_num();
-            auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+            auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
             ch->set_peer_id(tid);
             ch->set_num_peers(2);
             ch->set_comm_name(comm_name);
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(bcast) {
         auto test_params = backend_data.second.first;
         auto model_params = backend_data.second.second;
         
-        SMI::Utils::peer_num root = 14;
+        FMI::Utils::peer_num root = 14;
         constexpr int num_peers = 32;
         int* vals = static_cast<int*>(mmap(nullptr, num_peers * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         vals[root] = 42;
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(bcast) {
                 break;
             }
         }
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -179,7 +179,7 @@ BOOST_AUTO_TEST_CASE(barrier_unsucc) {
                 break;
             }
         }
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(barrier_unsucc) {
         if (peer_id != 1) {
             try {
                 ch->barrier();
-            } catch (SMI::Utils::Timeout) {
+            } catch (FMI::Utils::Timeout) {
                 caught[peer_id] = true;
             }
 
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(barrier_succ) {
                 break;
             }
         }
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -250,7 +250,7 @@ BOOST_AUTO_TEST_CASE(gather_one) {
         
         constexpr int num_peers = 2;
         std::vector<int> vals {1,2,3,4};
-        SMI::Utils::peer_num root = 1;
+        FMI::Utils::peer_num root = 1;
 
         int* rcv_vals = static_cast<int*>(mmap(nullptr, num_peers * 2 * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
@@ -261,7 +261,7 @@ BOOST_AUTO_TEST_CASE(gather_one) {
                 break;
             }
         }
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -295,7 +295,7 @@ BOOST_AUTO_TEST_CASE(gather_multiple) {
         for (int i = 0; i < vals.size(); i++) {
             vals[i] = i + 1;
         }
-        SMI::Utils::peer_num root = 0;
+        FMI::Utils::peer_num root = 0;
 
         int* rcv_vals = static_cast<int*>(mmap(nullptr, num_peers * 2 * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE(gather_multiple) {
                 break;
             }
         }
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(scatter_one) {
         
         constexpr int num_peers = 2;
         std::vector<int> root_vals {1,2,3,4};
-        SMI::Utils::peer_num root = 0;
+        FMI::Utils::peer_num root = 0;
 
         int* rcv_vals = static_cast<int*>(mmap(nullptr, num_peers * 2 * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE(scatter_one) {
                 break;
             }
         }
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -382,7 +382,7 @@ BOOST_AUTO_TEST_CASE(scatter_multiple) {
         for (int i = 0; i < root_vals.size(); i++) {
             root_vals[i] = i + 1;
         }
-        SMI::Utils::peer_num root = 3;
+        FMI::Utils::peer_num root = 3;
 
         int* rcv_vals = static_cast<int*>(mmap(nullptr, num_peers * 2 * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
@@ -393,7 +393,7 @@ BOOST_AUTO_TEST_CASE(scatter_multiple) {
                 break;
             }
         }
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -422,7 +422,7 @@ BOOST_AUTO_TEST_CASE(reduce_multiple) {
         auto test_params = backend_data.second.first;
         auto model_params = backend_data.second.second;
         
-        SMI::Utils::peer_num root = 5;
+        FMI::Utils::peer_num root = 5;
         constexpr int num_peers = 13;
         int* res = static_cast<int*>(mmap(nullptr, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
@@ -437,7 +437,7 @@ BOOST_AUTO_TEST_CASE(reduce_multiple) {
             int* dest = reinterpret_cast<int*>(a);
             *dest = *((int*) a) * *((int*) b);
         };
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -470,7 +470,7 @@ BOOST_AUTO_TEST_CASE(reduce_multiple_ltr) {
         auto test_params = backend_data.second.first;
         auto model_params = backend_data.second.second;
         
-        SMI::Utils::peer_num root = 0;
+        FMI::Utils::peer_num root = 0;
         constexpr int num_peers = 8;
         int* res = static_cast<int*>(mmap(nullptr, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE(reduce_multiple_ltr) {
             int* dest = reinterpret_cast<int*>(a);
             *dest = *((int*) a) - *((int*) b);
         };
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -532,7 +532,7 @@ BOOST_AUTO_TEST_CASE(allreduce_multiple) {
             int* dest = reinterpret_cast<int*>(a);
             *dest = *((int*) a) + *((int*) b);
         };
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_CASE(allreduce_multiple_ltr) {
         auto test_params = backend_data.second.first;
         auto model_params = backend_data.second.second;
         
-        SMI::Utils::peer_num root = 0;
+        FMI::Utils::peer_num root = 0;
         constexpr int num_peers = 8;
         int* res = static_cast<int*>(mmap(nullptr, num_peers * sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0));
         int peer_id = 0;
@@ -578,7 +578,7 @@ BOOST_AUTO_TEST_CASE(allreduce_multiple_ltr) {
             int* dest = reinterpret_cast<int*>(a);
             *dest = *((int*) a) - *((int*) b);
         };
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -623,7 +623,7 @@ BOOST_AUTO_TEST_CASE(scan) {
             int* dest = reinterpret_cast<int*>(a);
             *dest = *((int*) a) + *((int*) b);
         };
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);
@@ -666,7 +666,7 @@ BOOST_AUTO_TEST_CASE(scan_ltr) {
             int* dest = reinterpret_cast<int*>(a);
             *dest = *((int*) a) - *((int*) b);
         };
-        auto ch = SMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
+        auto ch = FMI::Comm::Channel::get_channel(channel_name, test_params, model_params);
         ch->set_peer_id(peer_id);
         ch->set_num_peers(num_peers);
         ch->set_comm_name(comm_name);

@@ -7,7 +7,7 @@
 #include <any>
 #include <boost/property_tree/ptree.hpp>
 
-namespace SMI::Utils {
+namespace FMI::Utils {
     //! Configuration parser for the SMI JSON configuration file
     class Configuration {
     public:

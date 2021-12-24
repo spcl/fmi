@@ -3,15 +3,15 @@
 #include <iostream>
 #include <cstring>
 
-void SMI::Comm::PeerToPeer::send(channel_data buf, SMI::Utils::peer_num dest) {
+void FMI::Comm::PeerToPeer::send(channel_data buf, FMI::Utils::peer_num dest) {
     send_object(buf, dest);
 }
 
-void SMI::Comm::PeerToPeer::recv(channel_data buf, SMI::Utils::peer_num src) {
+void FMI::Comm::PeerToPeer::recv(channel_data buf, FMI::Utils::peer_num src) {
     recv_object(buf, src);
 }
 
-void SMI::Comm::PeerToPeer::bcast(channel_data buf, SMI::Utils::peer_num root) {
+void FMI::Comm::PeerToPeer::bcast(channel_data buf, FMI::Utils::peer_num root) {
     int rounds = ceil(log2(num_peers));
     Utils::peer_num trans_peer_id = transform_peer_id(peer_id, root, true);
     for (int i = rounds - 1; i >= 0; i--) {
@@ -26,13 +26,13 @@ void SMI::Comm::PeerToPeer::bcast(channel_data buf, SMI::Utils::peer_num root) {
     }
 }
 
-void SMI::Comm::PeerToPeer::barrier() {
+void FMI::Comm::PeerToPeer::barrier() {
     auto nop = [] (char* a, char* b) {};
     char send = 1;
     allreduce({&send, sizeof(char)}, {&send, sizeof(char)}, {nop, true, true});
 }
 
-void SMI::Comm::PeerToPeer::reduce(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, raw_function f) {
+void FMI::Comm::PeerToPeer::reduce(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root, raw_function f) {
     bool left_to_right = !(f.commutative && f.associative);
     if (left_to_right) {
         reduce_ltr(sendbuf, recvbuf, root, f);
@@ -41,7 +41,7 @@ void SMI::Comm::PeerToPeer::reduce(channel_data sendbuf, channel_data recvbuf, S
     }
 }
 
-void SMI::Comm::PeerToPeer::reduce_ltr(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f) {
+void FMI::Comm::PeerToPeer::reduce_ltr(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root, const raw_function& f) {
     if (peer_id == root) {
         std::size_t tmpbuf_len = sendbuf.len * num_peers;
         char* tmpbuf = new char[tmpbuf_len];
@@ -56,7 +56,7 @@ void SMI::Comm::PeerToPeer::reduce_ltr(channel_data sendbuf, channel_data recvbu
     }
 }
 
-void SMI::Comm::PeerToPeer::reduce_no_order(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root, const raw_function& f) {
+void FMI::Comm::PeerToPeer::reduce_no_order(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root, const raw_function& f) {
     int rounds = ceil(log2(num_peers));
     Utils::peer_num trans_peer_id = transform_peer_id(peer_id, root, true);
     if (peer_id != root) {
@@ -83,7 +83,7 @@ void SMI::Comm::PeerToPeer::reduce_no_order(channel_data sendbuf, channel_data r
     }
 }
 
-void SMI::Comm::PeerToPeer::allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+void FMI::Comm::PeerToPeer::allreduce(channel_data sendbuf, channel_data recvbuf, raw_function f) {
     bool left_to_right = !(f.commutative && f.associative);
     if (left_to_right) {
         reduce(sendbuf, recvbuf, 0, f);
@@ -93,7 +93,7 @@ void SMI::Comm::PeerToPeer::allreduce(channel_data sendbuf, channel_data recvbuf
     }
 }
 
-void SMI::Comm::PeerToPeer::allreduce_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function &f) {
+void FMI::Comm::PeerToPeer::allreduce_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function &f) {
     // Non power of two N: First receive from processes with ID >= 2^ceil(log2(N)), send result after reduction
     int rounds = floor(log2(num_peers));
     int nearest_power_two = (int) std::pow(2, rounds);
@@ -129,7 +129,7 @@ void SMI::Comm::PeerToPeer::allreduce_no_order(channel_data sendbuf, channel_dat
     std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
 }
 
-void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
+void FMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw_function f) {
     bool left_to_right = !(f.commutative && f.associative);
     if (left_to_right) {
         scan_ltr(sendbuf, recvbuf, f);
@@ -138,7 +138,7 @@ void SMI::Comm::PeerToPeer::scan(channel_data sendbuf, channel_data recvbuf, raw
     }
 }
 
-void SMI::Comm::PeerToPeer::scan_ltr(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
+void FMI::Comm::PeerToPeer::scan_ltr(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
     if (peer_id == 0) {
         send(sendbuf, 1);
         std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
@@ -151,7 +151,7 @@ void SMI::Comm::PeerToPeer::scan_ltr(channel_data sendbuf, channel_data recvbuf,
     }
 }
 
-void SMI::Comm::PeerToPeer::scan_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
+void FMI::Comm::PeerToPeer::scan_no_order(channel_data sendbuf, channel_data recvbuf, const raw_function& f) {
     int rounds = floor(log2(num_peers));
     for (int i = 0; i < rounds; i ++) {
         if ((peer_id & ((int) std::pow(2, i + 1) - 1)) == (int) std::pow(2, i + 1) - 1) {
@@ -183,7 +183,7 @@ void SMI::Comm::PeerToPeer::scan_no_order(channel_data sendbuf, channel_data rec
     std::memcpy(recvbuf.buf, sendbuf.buf, sendbuf.len);
 }
 
-void SMI::Comm::PeerToPeer::gather(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root) {
+void FMI::Comm::PeerToPeer::gather(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root) {
     int rounds = ceil(log2(num_peers));
     Utils::peer_num trans_peer_id = transform_peer_id(peer_id, root, true);
     std::size_t single_buffer_size = sendbuf.len;
@@ -238,7 +238,7 @@ void SMI::Comm::PeerToPeer::gather(channel_data sendbuf, channel_data recvbuf, S
     }
 }
 
-void SMI::Comm::PeerToPeer::scatter(channel_data sendbuf, channel_data recvbuf, SMI::Utils::peer_num root) {
+void FMI::Comm::PeerToPeer::scatter(channel_data sendbuf, channel_data recvbuf, FMI::Utils::peer_num root) {
     int rounds = ceil(log2(num_peers));
     Utils::peer_num trans_peer_id = transform_peer_id(peer_id, root, true);
     std::size_t single_buffer_size = recvbuf.len;
@@ -284,7 +284,7 @@ void SMI::Comm::PeerToPeer::scatter(channel_data sendbuf, channel_data recvbuf, 
     }
 }
 
-SMI::Utils::peer_num SMI::Comm::PeerToPeer::transform_peer_id(SMI::Utils::peer_num id, SMI::Utils::peer_num root, bool forward) {
+FMI::Utils::peer_num FMI::Comm::PeerToPeer::transform_peer_id(FMI::Utils::peer_num id, FMI::Utils::peer_num root, bool forward) {
     if (forward) {
         return (id + num_peers - root) % num_peers; // Transform s.t. root has id 0
     } else {
@@ -292,7 +292,7 @@ SMI::Utils::peer_num SMI::Comm::PeerToPeer::transform_peer_id(SMI::Utils::peer_n
     }
 }
 
-double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op_info) {
+double FMI::Comm::PeerToPeer::get_operation_latency(FMI::Utils::OperationInfo op_info) {
     std::size_t size_in_bytes = op_info.data_size;
     switch (op_info.op) {
         case Utils::send:
@@ -350,7 +350,7 @@ double SMI::Comm::PeerToPeer::get_operation_latency(SMI::Utils::OperationInfo op
 
 }
 
-double SMI::Comm::PeerToPeer::get_operation_price(SMI::Utils::OperationInfo op_info) {
+double FMI::Comm::PeerToPeer::get_operation_price(FMI::Utils::OperationInfo op_info) {
     std::size_t size_in_bytes = op_info.data_size;
     switch (op_info.op) {
         case Utils::send:

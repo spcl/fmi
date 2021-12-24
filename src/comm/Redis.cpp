@@ -1,7 +1,7 @@
 #include "../../include/comm/Redis.h"
 #include <boost/log/trivial.hpp>
 
-SMI::Comm::Redis::Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) : ClientServer(params) {
+FMI::Comm::Redis::Redis(std::map<std::string, std::string> params, std::map<std::string, std::string> model_params) : ClientServer(params) {
     std::string hostname = params["host"];
     auto port = std::stoi(params["port"]);
     bandwidth_single = std::stod(model_params["bandwidth_single"]);
@@ -26,11 +26,11 @@ SMI::Comm::Redis::Redis(std::map<std::string, std::string> params, std::map<std:
     }
 }
 
-SMI::Comm::Redis::~Redis() {
+FMI::Comm::Redis::~Redis() {
     redisFree(context);
 }
 
-void SMI::Comm::Redis::upload_object(channel_data buf, std::string name) {
+void FMI::Comm::Redis::upload_object(channel_data buf, std::string name) {
     std::string command = "SET " + name + " %b";
     auto* reply = (redisReply*) redisCommand(context, command.c_str(), buf.buf, buf.len);
     if (reply->type == REDIS_REPLY_ERROR) {
@@ -39,7 +39,7 @@ void SMI::Comm::Redis::upload_object(channel_data buf, std::string name) {
     freeReplyObject(reply);
 }
 
-bool SMI::Comm::Redis::download_object(channel_data buf, std::string name) {
+bool FMI::Comm::Redis::download_object(channel_data buf, std::string name) {
     std::string command = "GET " + name;
     auto* reply = (redisReply*) redisCommand(context, command.c_str());
     if (reply->type == REDIS_REPLY_NIL || reply->type == REDIS_REPLY_ERROR) {
@@ -52,13 +52,13 @@ bool SMI::Comm::Redis::download_object(channel_data buf, std::string name) {
     }
 }
 
-void SMI::Comm::Redis::delete_object(std::string name) {
+void FMI::Comm::Redis::delete_object(std::string name) {
     std::string command = "DEL " + name;
     auto* reply = (redisReply*) redisCommand(context, command.c_str());
     freeReplyObject(reply);
 }
 
-std::vector<std::string> SMI::Comm::Redis::get_object_names() {
+std::vector<std::string> FMI::Comm::Redis::get_object_names() {
     std::vector<std::string> keys;
     std::string command = "KEYS *";
     auto* reply = (redisReply*) redisCommand(context, command.c_str());
@@ -68,13 +68,13 @@ std::vector<std::string> SMI::Comm::Redis::get_object_names() {
     return keys;
 }
 
-double SMI::Comm::Redis::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+double FMI::Comm::Redis::get_latency(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double agg_bandwidth = std::min(producer * consumer * bandwidth_single, bandwidth_multiple);
     double trans_time = producer * consumer * ((double) size_in_bytes / 1000000.) / agg_bandwidth;
     return std::log2(producer + consumer) * overhead + trans_time;
 }
 
-double SMI::Comm::Redis::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
+double FMI::Comm::Redis::get_price(Utils::peer_num producer, Utils::peer_num consumer, std::size_t size_in_bytes) {
     double transfer_costs = (1 + consumer) * producer * ((double) size_in_bytes / 1000000000.) * transfer_price;
     double total_costs = transfer_costs;
     if (include_infrastructure_costs) {

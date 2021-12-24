@@ -6,7 +6,7 @@
 #include <string>
 #include <hiredis/hiredis.h>
 
-namespace SMI::Comm {
+namespace FMI::Comm {
     //! Channel that uses Redis with the Hiredis client library as storage backend.
     class Redis : public ClientServer {
     public:

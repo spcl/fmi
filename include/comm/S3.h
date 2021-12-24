@@ -8,7 +8,7 @@
 #include <aws/core/Aws.h>
 #include <boost/interprocess/streams/bufferstream.hpp>
 
-namespace SMI::Comm {
+namespace FMI::Comm {
     //! Channel that uses AWS S3 as backend and uses the AWS SDK for C++ to access S3.
     class S3 : public ClientServer {
     public:
