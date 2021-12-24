@@ -26,4 +26,4 @@ git clone https://github.com/redis/hiredis.git
 cd hiredis/
 make install
 
-# Now, can run cmake in the python directory, and build smi.so, which can be distributed in a Lambda layer
+# Now, can run cmake in the python directory, and build fmi.so, which can be distributed in a Lambda layer

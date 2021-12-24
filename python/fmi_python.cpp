@@ -9,7 +9,7 @@ using namespace boost::python;
 
 
 
-BOOST_PYTHON_MODULE(smi)
+BOOST_PYTHON_MODULE(fmi)
 {
     class_<FMI::Utils::PythonCommunicator>("Communicator", init<FMI::Utils::peer_num, FMI::Utils::peer_num, std::string, std::string, optional<unsigned int> >())
         .def("send", &FMI::Utils::PythonCommunicator::send)

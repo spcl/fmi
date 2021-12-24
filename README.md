@@ -1,4 +1,4 @@
-<img src="./docs/smi.svg" width="100%">
+<img src="docs/fmi.svg" width="100%">
 
 # Serverless Message Interface
 
@@ -16,7 +16,7 @@
 add_subdirectory(path_to_repo/FMI/)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE FMI)
-target_include_directories(${PROJECT_NAME} PRIVATE ${SMI_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${FMI_INCLUDE_DIRS})
 ```
 - Integrate the library into your project:
 ```cpp
@@ -34,10 +34,10 @@ cd build
 cmake ..
 make
 ```
-- `smi.so` gets created in the `python/build` directory. You can copy it into your Python module path or include the build directory via `PYTHONPATH`. The library can then be integrated into your project:
+- `fmi.so` gets created in the `python/build` directory. You can copy it into your Python module path or include the build directory via `PYTHONPATH`. The library can then be integrated into your project:
 ```python
-import smi
-comm = smi.Communicator(peer_id, num_peers, "config/fmi.json", "MyApp", 512);
+import fmi
+comm = fmi.Communicator(peer_id, num_peers, "config/fmi.json", "MyApp", 512);
 ```
 ### Docker Container
 The Docker containers [FMI-build-docker](https://github.com/OpenCoreCH/FMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.

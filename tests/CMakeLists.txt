@@ -5,4 +5,4 @@ include_directories (${Boost_INCLUDE_DIRS})
 
 
 add_executable (Boost_Tests_run channels.cpp communicator.cpp)
-target_link_libraries (Boost_Tests_run ${Boost_LIBRARIES} SMI OpenMP::OpenMP_CXX)
+target_link_libraries (Boost_Tests_run ${Boost_LIBRARIES} FMI OpenMP::OpenMP_CXX)

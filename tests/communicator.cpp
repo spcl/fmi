@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE SMI
+#define BOOST_TEST_MODULE FMI
 #include <boost/test/unit_test.hpp>
 
 #include <omp.h>

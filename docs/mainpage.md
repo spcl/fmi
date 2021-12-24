@@ -1,7 +1,7 @@
 Serverless Message Interface      {#mainpage}
 ============
 
-<img src="./smi.svg" width="100%">
+<img src="./fmi.svg" width="100%">
 
 ## Getting Started
 ### C++
@@ -28,21 +28,21 @@ assert(id_sum == 3);
 
 ### Python
 ```python
-import smi
+import fmi
 ...
-comm = smi.Communicator(peer_id, 3, config_path, comm_name)
+comm = fmi.Communicator(peer_id, 3, config_path, comm_name)
 if peer_id == 0:
-    comm.bcast(42, 0, smi.types(smi.datatypes.int))
+    comm.bcast(42, 0, fmi.types(fmi.datatypes.int))
 else:
-    bc_res = comm.bcast(None, 0, smi.types(smi.datatypes.int))
+    bc_res = comm.bcast(None, 0, fmi.types(fmi.datatypes.int))
     assert bc_res == 42
-sc_res = comm.scatter([0, 1, 2], 0, smi.types(smi.datatypes.int_list, 3))
+sc_res = comm.scatter([0, 1, 2], 0, fmi.types(fmi.datatypes.int_list, 3))
 assert sc_res[0] == peer_id
-id_sum = comm.allreduce(peer_id, smi.func(smi.op.sum),
-                        smi.types(smi.datatypes.int))
+id_sum = comm.allreduce(peer_id, fmi.func(fmi.op.sum),
+                        fmi.types(fmi.datatypes.int))
 assert id_sum == 3
 id_custom = comm.allreduce(peer_id,
-             smi.func(smi.op.custom, lambda a, b: 3 * a + b, False, False),
-             smi.types(smi.datatypes.int))
+             fmi.func(fmi.op.custom, lambda a, b: 3 * a + b, False, False),
+             fmi.types(fmi.datatypes.int))
 assert id_custom == 5 # Left-to-right order because of non-assoc. / non-comm.
 ```
