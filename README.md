@@ -22,7 +22,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${SMI_INCLUDE_DIRS})
 ```cpp
 #include <Communicator.h>
 ...
-FMI::Communicator comm(peer_id, num_peers, "config/smi.json", "MyApp", 512);
+FMI::Communicator comm(peer_id, num_peers, "config/fmi.json", "MyApp", 512);
 ```
 
 ## Installation (Python)
@@ -37,7 +37,7 @@ make
 - `smi.so` gets created in the `python/build` directory. You can copy it into your Python module path or include the build directory via `PYTHONPATH`. The library can then be integrated into your project:
 ```python
 import smi
-comm = smi.Communicator(peer_id, num_peers, "config/smi.json", "MyApp", 512);
+comm = smi.Communicator(peer_id, num_peers, "config/fmi.json", "MyApp", 512);
 ```
 ### Docker Container
 The Docker containers [FMI-build-docker](https://github.com/OpenCoreCH/FMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.

@@ -6,7 +6,7 @@ Serverless Message Interface      {#mainpage}
 ## Getting Started
 ### C++
 ```cpp
-#include <smi.h>
+#include <fmi.h>
 ...
 FMI::Communicator comm(peer_id, 3, config_path, comm_name);
 FMI::Comm::Data<double> d;

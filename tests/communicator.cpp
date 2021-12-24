@@ -2,12 +2,12 @@
 #include <boost/test/unit_test.hpp>
 
 #include <omp.h>
-#include "../include/smi.h"
+#include "../include/fmi.h"
 
 BOOST_AUTO_TEST_SUITE(Communicator);
 
 std::string comm_name = std::to_string(std::time(nullptr));
-std::string config_path = "../../config/smi_test.json";
+std::string config_path = "../../config/fmi_test.json";
 
 BOOST_AUTO_TEST_CASE(sending_receiving) {
     FMI::Comm::Data<int> d_single = 1;
