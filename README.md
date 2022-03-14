@@ -42,7 +42,6 @@ make
 import fmi
 comm = fmi.Communicator(peer_id, num_peers, "config/fmi.json", "MyApp", 512);
 ```
-In [FMI/python/aws](FMI/python/aws), there are CloudFormation templates that you can use for deploying the system easily on AWS Lambda.
 
 ### Docker Images
 The Docker images [FMI-build-docker](https://github.com/OpenCoreCH/FMI-build-docker) contain all necessary dependencies and set up the environment for you. See the repo for details.
@@ -53,6 +52,6 @@ For even easier deployment, we provide AWS CloudFormation templates to create La
 ## Examples
 C++ sample code for the library is available at [tests/communicator.cpp](tests/communicator.cpp), the usage from Python is demonstrated in [python/tests/client.py](python/tests/client.py). 
 
-## Documentation
+## Documentation
 The architecture of the system including a comparison with existing systems and benchmarks is documented in the thesis [FMI: The FaaS Message Interface](https://doi.org/10.3929/ethz-b-000532425).
 A technical documentation of the system (for people that want to extend it) is available at [fmi.opencore.ch](https://fmi.opencore.ch).
