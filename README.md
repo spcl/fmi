@@ -55,3 +55,8 @@ C++ sample code for the library is available at [tests/communicator.cpp](tests/c
 ## Documentation
 The architecture of the system including a comparison with existing systems and benchmarks is documented in the thesis [FMI: The FaaS Message Interface](https://doi.org/10.3929/ethz-b-000532425).
 A technical documentation of the system (for people that want to extend it) is available at [fmi.opencore.ch](https://fmi.opencore.ch).
+
+## Authors
+
+* [Marcin Copik (ETH Zurich)](https://github.com/mcopik/) - maintainer.
+* [Roman Böhringer (OpenCoreCH)](https://github.com/OpenCoreCH) - main author of FMI.
