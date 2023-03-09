@@ -53,7 +53,8 @@ For even easier deployment, we provide AWS CloudFormation templates to create La
 C++ sample code for the library is available at [tests/communicator.cpp](tests/communicator.cpp), the usage from Python is demonstrated in [python/tests/client.py](python/tests/client.py). 
 
 ## Documentation
-The architecture of the system including a comparison with existing systems and benchmarks is documented in the thesis [FMI: The FaaS Message Interface](https://doi.org/10.3929/ethz-b-000532425).
+The architecture of the system including a comparison with existing systems and benchmarks is documented in the paper preprint [FMI: Fast and Cheap Message Passing for Serverless Functions](https://spcl.inf.ethz.ch/Publications/.pdf/2022_copik_serverless_collectives_report.pdf). More details can be found in the thesis [FMI: The FaaS Message Interface](https://doi.org/10.3929/ethz-b-000532425).
+
 A technical documentation of the system (for people that want to extend it) is available at [fmi.opencore.ch](https://fmi.opencore.ch).
 
 ## Authors
