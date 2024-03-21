@@ -24,7 +24,6 @@ FMI::Comm::S3::S3(std::map<std::string, std::string> params, std::map<std::strin
     download_price = std::stod(model_params["download_price"]);
     upload_price = std::stod(model_params["upload_price"]);
 
-    auto credentialsProvider = Aws::MakeShared<Aws::Auth::EnvironmentAWSCredentialsProvider>(TAG);
     client = Aws::MakeUnique<Aws::S3::S3Client>(TAG, config);
 }
 
